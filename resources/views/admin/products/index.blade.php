@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin - Products</title>
+    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-50">
@@ -13,6 +14,7 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between items-center py-6">
                     <div class="flex items-center space-x-8">
+                        <img src="{{ asset('images/logo.png') }}" alt="Store Logo" class="w-10 h-10 rounded-lg mr-3">
                         <h1 class="text-3xl font-bold text-gray-900">Admin Panel</h1>
                         <nav class="flex space-x-4">
                             <a href="{{ route('admin.products.index') }}" class="text-blue-600 font-medium">Products</a>
@@ -76,7 +78,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        ${{ number_format($product->price, 2) }}
+                                        RM{{ number_format($product->price, 2) }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $product->variants->count() }} variant(s)

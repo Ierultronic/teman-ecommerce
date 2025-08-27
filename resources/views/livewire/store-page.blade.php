@@ -8,8 +8,11 @@
                         <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-48 object-cover">
                         <!-- Stock Status Badge -->
                         <div class="absolute top-2 right-2">
-                            @if($product->total_stock > 0)
-                                @if($product->total_stock <= 5)
+                            @php
+                                $currentStock = $this->getDisplayStock($product->id);
+                            @endphp
+                            @if($currentStock > 0)
+                                @if($currentStock <= 5)
                                     <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">Low Stock</span>
                                 @else
                                     <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">In Stock</span>
@@ -24,8 +27,11 @@
                         <span class="text-gray-400">No Image</span>
                         <!-- Stock Status Badge -->
                         <div class="absolute top-2 right-2">
-                            @if($product->total_stock > 0)
-                                @if($product->total_stock <= 5)
+                            @php
+                                $currentStock = $this->getDisplayStock($product->id);
+                            @endphp
+                            @if($currentStock > 0)
+                                @if($currentStock <= 5)
                                     <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">Low Stock</span>
                                 @else
                                     <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">In Stock</span>
@@ -40,7 +46,7 @@
                 <div class="p-6">
                     <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $product->name }}</h3>
                     <p class="text-gray-600 text-sm mb-4">{{ Str::limit($product->description, 100) }}</p>
-                    <p class="text-2xl font-bold text-green-600 mb-4">${{ number_format($product->price, 2) }}</p>
+                    <p class="text-2xl font-bold text-green-600 mb-4">RM{{ number_format($product->price, 2) }}</p>
                     
                     <!-- Stock Information -->
                     <div class="mb-4">
@@ -125,7 +131,7 @@
                                     @endif
                                 </span>
                                 <span class="text-sm font-medium text-blue-700">
-                                    ${{ number_format(($product->price * $this->getCartQuantity($product->id, $selectedVariant[$product->id] ?? null)), 2) }}
+                                    RM{{ number_format(($product->price * $this->getCartQuantity($product->id, $selectedVariant[$product->id] ?? null)), 2) }}
                                 </span>
                             </div>
                         </div>
@@ -137,7 +143,7 @@
                                     class="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
                                 Remove from Cart
                             </button>
-                            <button wire:click="addToCart({{ $product->id }}, {{ $selectedVariant[$product->id] ?? 'null' }}, {{ $quantity[$product->id] ?? 1 }})" 
+                            <button wire:click="updateCart({{ $product->id }}, {{ $selectedVariant[$product->id] ?? 'null' }}, {{ $quantity[$product->id] ?? 1 }})" 
                                     class="flex-1 {{ $this->getDisplayStock($product->id) > 0 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-400 cursor-not-allowed' }} text-white px-4 py-2 rounded-md transition-colors"
                                     {{ $this->getDisplayStock($product->id) <= 0 ? 'disabled' : '' }}>
                                 {{ $this->getDisplayStock($product->id) > 0 ? 'Update Cart' : 'Out of Stock' }}
@@ -165,19 +171,23 @@
             <div class="max-w-7xl mx-auto flex items-center justify-between">
                 <div class="flex items-center space-x-4">
                     <span class="text-sm text-gray-600">Items in cart: {{ $this->getCartCount() }}</span>
-                    <span class="text-lg font-semibold text-green-600">Total: ${{ number_format($this->getCartTotal(), 2) }}</span>
+                    <span class="text-lg font-semibold text-green-600">Total: RM{{ number_format($this->getCartTotal(), 2) }}</span>
                 </div>
-                <button wire:click="showOrderForm" class="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition-colors">
-                    Proceed to Checkout
-                </button>
+                <div class="flex space-x-2">
+                    <button wire:click="$set('showOrderForm', true)" class="bg-orange-600 text-white px-6 py-3 rounded-md hover:bg-orange-700 transition-colors">
+                        Proceed to Checkout
+                    </button>
+                </div>
             </div>
         </div>
     @endif
 
+
     <!-- Order Form Modal -->
     @if($showOrderForm)
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div class="bg-white rounded-lg max-w-md w-full p-6">
+        
+        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+            <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
                 <h3 class="text-lg font-semibold text-gray-900 mb-4">Complete Your Order</h3>
                 
                 <!-- Cart Summary -->
@@ -186,13 +196,13 @@
                     @foreach($cart as $item)
                         <div class="flex justify-between text-sm mb-1">
                             <span>{{ $item['product_name'] }} ({{ $item['variant_name'] }}) x {{ $item['quantity'] }}</span>
-                            <span>${{ number_format($item['price'] * $item['quantity'], 2) }}</span>
+                            <span>RM{{ number_format($item['price'] * $item['quantity'], 2) }}</span>
                         </div>
                     @endforeach
                     <div class="border-t pt-2 mt-2">
                         <div class="flex justify-between font-semibold">
                             <span>Total:</span>
-                            <span>${{ number_format($this->getCartTotal(), 2) }}</span>
+                            <span>RM{{ number_format($this->getCartTotal(), 2) }}</span>
                         </div>
                     </div>
                 </div>
