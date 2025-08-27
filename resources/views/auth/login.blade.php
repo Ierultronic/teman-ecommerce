@@ -13,7 +13,10 @@
     <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
         <div class="max-w-md w-full space-y-8">
             <div>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                <div class="flex justify-center">
+                    <img class="h-20 w-20 rounded-lg" src="{{ asset('images/logo.png') }}" alt="Logo">
+                </div>
+                <h2 class="mt-4 text-center text-3xl font-extrabold text-gray-900">
                     Admin Login
                 </h2>
                 <p class="mt-2 text-center text-sm text-gray-600">

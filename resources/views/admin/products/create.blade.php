@@ -71,7 +71,7 @@
                                     <span class="text-gray-500 sm:text-sm">RM</span>
                                 </div>
                                 <input type="number" name="price" id="price" value="{{ old('price') }}" step="0.01" min="0" required
-                                       class="pl-7 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
+                                       class="pl-12 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-blue-500 focus:border-blue-500">
                             </div>
                             @error('price')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
