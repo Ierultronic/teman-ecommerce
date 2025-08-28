@@ -1,116 +1,193 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
-    <title>Admin - Orders</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-50">
-    <div class="min-h-screen">
-        <!-- Header -->
-        <header class="bg-white shadow-sm border-b">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between items-center py-6">
-                    <div class="flex items-center space-x-8">
-                        <img src="{{ asset('images/logo.png') }}" alt="Store Logo" class="w-10 h-10 rounded-lg mr-3">
-                        <h1 class="text-3xl font-bold text-gray-900">Admin Panel</h1>
-                        <nav class="flex space-x-4">
-                            <a href="{{ route('admin.products.index') }}" class="text-gray-600 hover:text-gray-900">Products</a>
-                            <a href="{{ route('admin.orders.index') }}" class="text-blue-600 font-medium">Orders</a>
-                        </nav>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                        <a href="{{ route('store.index') }}" class="text-gray-600 hover:text-gray-900">View Store</a>
-                        <form action="{{ route('logout') }}" method="POST" class="inline">
-                            @csrf
-                            <button type="submit" class="text-gray-600 hover:text-gray-900">Logout</button>
-                        </form>
-                    </div>
+@extends('admin.layouts.app')
+
+@section('title', 'Orders')
+@section('page-title', 'Orders Management')
+
+@section('content')
+    @php
+        // Safe variables for null checks
+        $ordersCount = $orders ? $orders->count() : 0;
+        $ordersTotal = $orders ? $orders->total() : 0;
+    @endphp
+    
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                    <i data-feather="shopping-cart" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Orders</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $ordersTotal }}</p>
                 </div>
             </div>
-        </header>
-
-        <!-- Main Content -->
-        <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            @if(session('success'))
-                <div class="mb-6 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-                    {{ session('success') }}
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                    <i data-feather="clock" class="w-6 h-6"></i>
                 </div>
-            @endif
-
-            <!-- Orders Table -->
-            <div class="bg-white shadow overflow-hidden sm:rounded-md">
-                <div class="px-4 py-5 sm:px-6">
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">Orders</h3>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Pending</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $orders && $ordersCount > 0 ? $orders->where('status', 'pending')->count() : 0 }}</p>
                 </div>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order ID</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($orders as $order)
-                                <tr>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        #{{ $order->id }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div>
-                                            <div class="text-sm font-medium text-gray-900">{{ $order->customer_name }}</div>
-                                            <div class="text-sm text-gray-500">{{ $order->customer_email }}</div>
-                                            @if($order->customer_phone)
-                                                <div class="text-sm text-gray-500">{{ $order->customer_phone }}</div>
-                                            @endif
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        RM{{ number_format($order->total_price, 2) }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                            @if($order->status === 'pending') bg-yellow-100 text-yellow-800
-                                            @elseif($order->status === 'processing') bg-blue-100 text-blue-800
-                                            @elseif($order->status === 'shipped') bg-purple-100 text-purple-800
-                                            @elseif($order->status === 'delivered') bg-green-100 text-green-800
-                                            @else bg-red-100 text-red-800
-                                            @endif">
-                                            {{ ucfirst($order->status) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $order->created_at->format('M d, Y H:i') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <a href="{{ route('admin.orders.show', $order) }}" class="text-blue-600 hover:text-blue-900">View</a>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                        No orders found.
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-                
-                @if($orders->hasPages())
-                    <div class="px-6 py-3 border-t border-gray-200">
-                        {{ $orders->links() }}
-                    </div>
-                @endif
             </div>
-        </main>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-green-100 text-green-600">
+                    <i data-feather="check-circle" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Completed</p>
+                    <p class="text-2xl font-semibold text-gray-900">{{ $orders && $ordersCount > 0 ? $orders->where('status', 'delivered')->count() : 0 }}</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="flex items-center">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
+                    <i data-feather="dollar-sign" class="w-6 h-6"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-600">Total Revenue</p>
+                    <p class="text-2xl font-semibold text-gray-900">RM{{ number_format($orders && $ordersCount > 0 ? $orders->sum('total_price') : 0, 2) }}</p>
+                </div>
+            </div>
+        </div>
     </div>
-</body>
-</html>
+
+    <!-- Orders Table -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">Orders List</h3>
+                    <p class="text-sm text-gray-500">Manage customer orders and track their status</p>
+                </div>
+                <div class="mt-4 sm:mt-0">
+                    <div class="flex space-x-2">
+                        <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <option value="">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="processing">Processing</option>
+                            <option value="shipped">Shipped</option>
+                            <option value="delivered">Delivered</option>
+                            <option value="cancelled">Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @if($orders && $ordersCount > 0)
+                        @foreach($orders as $order)
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-primary-100 rounded-lg flex items-center justify-center mr-3">
+                                        <i data-feather="shopping-bag" class="w-5 h-5 text-primary-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">#{{ $order->id }}</div>
+                                        <div class="text-xs text-gray-500">{{ $order->orderItems->count() }} item{{ $order->orderItems->count() !== 1 ? 's' : '' }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                        <i data-feather="user" class="w-4 h-4 text-gray-600"></i>
+                                    </div>
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $order->customer_name }}</div>
+                                        <div class="text-sm text-gray-500">{{ $order->customer_email }}</div>
+                                        @if($order->customer_phone)
+                                            <div class="text-xs text-gray-400">{{ $order->customer_phone }}</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">RM{{ number_format($order->total_price, 2) }}</div>
+                                @if($order->orderItems->count() > 0)
+                                    <div class="text-xs text-gray-500">{{ $order->orderItems->count() }} item{{ $order->orderItems->count() !== 1 ? 's' : '' }}</div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @php
+                                    $statusConfig = [
+                                        'pending' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'icon' => 'clock'],
+                                        'processing' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'icon' => 'settings'],
+                                        'shipped' => ['bg' => 'bg-purple-100', 'text' => 'text-purple-800', 'icon' => 'truck'],
+                                        'delivered' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'check-circle'],
+                                        'cancelled' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'icon' => 'x-circle']
+                                    ];
+                                    $config = $statusConfig[$order->status] ?? $statusConfig['pending'];
+                                @endphp
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }}">
+                                    <i data-feather="{{ $config['icon'] }}" class="w-3 h-3 mr-1"></i>
+                                    {{ ucfirst($order->status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ $order->created_at->format('M d, Y') }}</div>
+                                <div class="text-xs text-gray-500">{{ $order->created_at->format('H:i') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ route('admin.orders.show', $order) }}" 
+                                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                                        <i data-feather="eye" class="w-3 h-3 mr-1"></i>
+                                        View
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center">
+                                <div class="flex flex-col items-center">
+                                    <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                        <i data-feather="shopping-cart" class="w-8 h-8 text-gray-400"></i>
+                                    </div>
+                                    <h3 class="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
+                                    <p class="text-gray-500 mb-4">Orders will appear here when customers make purchases</p>
+                                    <a href="{{ route('store.index') }}" 
+                                       class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                                        <i data-feather="external-link" class="w-4 h-4 mr-2"></i>
+                                        View Store
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    @endif
+                </tbody>
+            </table>
+        </div>
+        
+        @if($orders && $ordersCount > 0 && $orders->hasPages())
+            <div class="px-6 py-3 border-t border-gray-200 bg-gray-50">
+                {{ $orders->links() }}
+            </div>
+        @endif
+    </div>
+@endsection

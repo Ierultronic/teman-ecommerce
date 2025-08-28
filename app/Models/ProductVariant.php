@@ -31,4 +31,20 @@ class ProductVariant extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
+
+    /**
+     * Get the route key for the model.
+     */
+    public function getRouteKeyName()
+    {
+        return 'id';
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        return $this->withTrashed()->where($field ?? $this->getRouteKeyName(), $value)->first();
+    }
 }

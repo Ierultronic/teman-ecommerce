@@ -173,7 +173,7 @@
                                 <option value="delivered" {{ $order->status === 'delivered' ? 'selected' : '' }}>Delivered</option>
                                 <option value="cancelled" {{ $order->status === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                             </select>
-                            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                            <button type="submit" class=" text-white px-4 py-2 rounded-md bg-orange-600 hover:bg-orange-700 transition-colors">
                                 Update Status
                             </button>
                         </div>
