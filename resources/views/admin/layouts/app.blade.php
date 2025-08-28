@@ -123,13 +123,7 @@
                         </button>
                         <h2 class="text-xl font-semibold text-gray-900">@yield('page-title', 'Dashboard')</h2>
                     </div>
-                    <div class="flex items-center space-x-4">
-                        <!-- Notifications -->
-                        <button class="relative p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                            <i data-feather="bell" class="w-5 h-5"></i>
-                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                        </button>
-                    </div>
+
                 </div>
             </div>
 

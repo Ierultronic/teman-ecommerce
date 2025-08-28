@@ -151,7 +151,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Quantity:</label>
                         <div class="flex items-center space-x-2">
                             <button wire:click="decrementQuantity({{ $product->id }})" 
-                                    class="w-8 h-8 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center"
+                                    class="w-8 h-8 {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) <= 1) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300' }} rounded-md transition-colors flex items-center justify-center"
                                     {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) <= 1) ? 'disabled' : '' }}>
                                 -
                             </button>
@@ -159,16 +159,22 @@
                                     class="w-16 text-center border border-gray-300 rounded-md px-2 py-1 {{ ($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') ? 'bg-gray-100 cursor-not-allowed' : '' }}" 
                                     min="1" max="{{ $this->getDisplayStock($product->id) }}" 
                                     value="{{ $quantity[$product->id] ?? 1 }}"
-                                    {{ ($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') ? 'disabled' : '' }}>
+                                    {{ ($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') ? 'disabled' : '' }}
+                                    wire:change="updateQuantity({{ $product->id }}, $event.target.value)"
+                                    oninput="this.value = Math.min({{ $this->getDisplayStock($product->id) }}, Math.max(1, parseInt(this.value) || 1))">
                             <button wire:click="incrementQuantity({{ $product->id }})" 
-                                    class="w-8 h-8 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center"
+                                    class="w-8 h-8 {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id)) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300' }} rounded-md transition-colors flex items-center justify-center"
                                     {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id)) ? 'disabled' : '' }}>
                                 +
                             </button>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
                             @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
-                                Max: {{ $this->getDisplayStock($product->id) }} available
+                                @if(($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id))
+                                    <span class="text-orange-600 font-medium">Maximum quantity reached</span>
+                                @else
+                                    Max: {{ $this->getDisplayStock($product->id) }} available
+                                @endif
                             @else
                                 Please select a variant first
                             @endif

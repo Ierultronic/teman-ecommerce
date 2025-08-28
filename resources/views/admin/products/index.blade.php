@@ -249,12 +249,12 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center">
-                                <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
+                                <!-- <div class="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center mr-3">
                                     <i data-feather="user" class="w-4 h-4 text-gray-600"></i>
-                                </div>
+                                </div> -->
                                 <div>
                                     <div class="text-sm font-medium text-gray-900">{{ $product->creator->name ?? 'Unknown' }}</div>
-                                    <div class="text-xs text-gray-500">{{ $product->created_at->format('M d, Y') }}</div>
+                                    <div class="text-xs text-gray-500">{{ $product->created_at->format('d/m/Y') }}</div>
                                 </div>
                             </div>
                         </td>

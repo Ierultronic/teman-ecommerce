@@ -139,7 +139,7 @@ class StorePage extends Component
         
         // Get selected variant if any
         $variantId = $this->selectedVariant[$productId] ?? null;
-        $availableStock = $this->getAvailableStock($productId, $variantId);
+        $availableStock = $this->getDisplayStock($productId);
         
         // Ensure quantity is a valid integer
         $quantity = (int) $quantity;
@@ -157,14 +157,19 @@ class StorePage extends Component
     public function incrementQuantity($productId)
     {
         $currentQty = $this->quantity[$productId] ?? 1;
-        $this->updateQuantity($productId, $currentQty + 1);
+        $availableStock = $this->getDisplayStock($productId);
+        
+        // Only increment if we haven't reached the stock limit
+        if ($currentQty < $availableStock) {
+            $this->quantity[$productId] = $currentQty + 1;
+        }
     }
 
     public function decrementQuantity($productId)
     {
         $currentQty = $this->quantity[$productId] ?? 1;
         if ($currentQty > 1) {
-            $this->updateQuantity($productId, $currentQty - 1);
+            $this->quantity[$productId] = $currentQty - 1;
         }
     }
 
@@ -286,6 +291,14 @@ class StorePage extends Component
         
         // Reset quantity to 1 when variant changes
         $this->quantity[$productId] = 1;
+        
+        // Validate that the quantity doesn't exceed available stock
+        $availableStock = $this->getDisplayStock($productId);
+        if ($availableStock <= 0) {
+            $this->quantity[$productId] = 0;
+        } elseif ($this->quantity[$productId] > $availableStock) {
+            $this->quantity[$productId] = $availableStock;
+        }
     }
 
     public function updatedSelectedVariant($value, $key)
@@ -294,11 +307,17 @@ class StorePage extends Component
         $parts = explode('.', $key);
         if (count($parts) >= 2) {
             $productId = $parts[1];
-            // Reset quantity to 1 when variant changes
-            $this->quantity[$productId] = 1;
             
             // Ensure the selectedVariant is properly set
             $this->selectedVariant[$productId] = $value;
+            
+            // Reset and validate quantity when variant changes
+            $availableStock = $this->getDisplayStock($productId);
+            if ($availableStock <= 0) {
+                $this->quantity[$productId] = 0;
+            } else {
+                $this->quantity[$productId] = 1;
+            }
         }
         
         // No need for $refresh, Livewire will handle the update automatically
@@ -311,14 +330,36 @@ class StorePage extends Component
         if (count($parts) >= 2) {
             $productId = $parts[1];
             $quantity = (int) $value;
+            $availableStock = $this->getDisplayStock($productId);
             
             // Validate and update the quantity
-            $this->updateQuantity($productId, $quantity);
+            if ($quantity <= 0) {
+                $this->quantity[$productId] = 1;
+            } elseif ($quantity > $availableStock) {
+                $this->quantity[$productId] = $availableStock;
+            } else {
+                $this->quantity[$productId] = $quantity;
+            }
+        }
+    }
+
+    public function validateQuantitiesAgainstStock()
+    {
+        foreach ($this->quantity as $productId => $qty) {
+            $availableStock = $this->getDisplayStock($productId);
+            if ($qty > $availableStock && $availableStock > 0) {
+                $this->quantity[$productId] = $availableStock;
+            } elseif ($availableStock <= 0) {
+                $this->quantity[$productId] = 0;
+            }
         }
     }
 
     public function render()
     {
+        // Validate quantities against current stock before rendering
+        $this->validateQuantitiesAgainstStock();
+        
         return view('livewire.store-page');
     }
 }

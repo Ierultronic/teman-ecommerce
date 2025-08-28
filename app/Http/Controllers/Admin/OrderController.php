@@ -8,22 +8,39 @@ use App\Models\OrderItem;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Redirect;
 
 class OrderController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $orders = Order::with(['user', 'orderItems.product', 'orderItems.productVariant'])
-            ->latest()
-            ->paginate(15);
-            
-        return view('admin.orders.index', compact('orders'));
+        $query = Order::with(['user', 'orderItems.product', 'orderItems.productVariant']);
+        
+        // Apply status filter
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+        
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', '%' . $search . '%')
+                  ->orWhere('customer_name', 'like', '%' . $search . '%')
+                  ->orWhere('customer_email', 'like', '%' . $search . '%');
+            });
+        }
+        
+        $orders = $query->latest()->paginate(15);
+        
+        return View::make('admin.orders.index', compact('orders'));
     }
 
     public function show(Order $order)
     {
         $order->load(['user', 'orderItems.product', 'orderItems.productVariant']);
-        return view('admin.orders.show', compact('order'));
+        return View::make('admin.orders.show', compact('order'));
     }
 
     public function updateStatus(Request $request, Order $order)
@@ -34,6 +51,6 @@ class OrderController extends Controller
 
         $order->update(['status' => $request->status]);
 
-        return redirect()->back()->with('success', 'Order status updated successfully!');
+        return Redirect::back()->with('success', 'Order status updated successfully!');
     }
 }

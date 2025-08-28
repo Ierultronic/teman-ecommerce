@@ -8,6 +8,8 @@
         // Safe variables for null checks
         $ordersCount = $orders ? $orders->count() : 0;
         $ordersTotal = $orders ? $orders->total() : 0;
+        $currentStatus = request('status', '');
+        $currentSearch = request('search', '');
     @endphp
     
     <!-- Stats Cards -->
@@ -70,16 +72,46 @@
                     <p class="text-sm text-gray-500">Manage customer orders and track their status</p>
                 </div>
                 <div class="mt-4 sm:mt-0">
-                    <div class="flex space-x-2">
-                        <select class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    <form method="GET" action="{{ route('admin.orders.index') }}" class="flex space-x-2">
+                        <!-- Search Input -->
+                        <div class="relative">
+                            <input name="search" 
+                                   type="text" 
+                                   value="{{ $currentSearch }}"
+                                   placeholder="Search orders..." 
+                                   class="border border-gray-300 rounded-lg pl-10 pr-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-feather="search" class="h-4 w-4 text-gray-400"></i>
+                            </div>
+                        </div>
+                        
+                        <!-- Status Filter -->
+                        <select name="status" 
+                                class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             <option value="">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="processing">Processing</option>
-                            <option value="shipped">Shipped</option>
-                            <option value="delivered">Delivered</option>
-                            <option value="cancelled">Cancelled</option>
+                            <option value="pending" {{ $currentStatus === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="processing" {{ $currentStatus === 'processing' ? 'selected' : '' }}>Processing</option>
+                            <option value="shipped" {{ $currentStatus === 'shipped' ? 'selected' : '' }}>Shipped</option>
+                            <option value="delivered" {{ $currentStatus === 'delivered' ? 'selected' : '' }}>Delivered</option>
+                            <option value="cancelled" {{ $currentStatus === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                         </select>
-                    </div>
+                        
+                        <!-- Filter Button -->
+                        <button type="submit" 
+                                class="inline-flex items-center px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                            <i data-feather="filter" class="w-4 h-4 mr-1"></i>
+                            Filter
+                        </button>
+                        
+                        <!-- Clear Filters Button -->
+                        @if($currentStatus || $currentSearch)
+                            <a href="{{ route('admin.orders.index') }}" 
+                               class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                                <i data-feather="x" class="w-4 h-4 mr-1"></i>
+                                Clear
+                            </a>
+                        @endif
+                    </form>
                 </div>
             </div>
         </div>
@@ -170,12 +202,26 @@
                                         <i data-feather="shopping-cart" class="w-8 h-8 text-gray-400"></i>
                                     </div>
                                     <h3 class="text-lg font-medium text-gray-900 mb-2">No orders found</h3>
-                                    <p class="text-gray-500 mb-4">Orders will appear here when customers make purchases</p>
-                                    <a href="{{ route('store.index') }}" 
-                                       class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
-                                        <i data-feather="external-link" class="w-4 h-4 mr-2"></i>
-                                        View Store
-                                    </a>
+                                    <p class="text-gray-500 mb-4">
+                                        @if($currentStatus || $currentSearch)
+                                            No orders match your current filters. Try adjusting your search criteria.
+                                        @else
+                                            Orders will appear here when customers make purchases
+                                        @endif
+                                    </p>
+                                    @if($currentStatus || $currentSearch)
+                                        <a href="{{ route('admin.orders.index') }}" 
+                                           class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                                            <i data-feather="refresh-cw" class="w-4 h-4 mr-2"></i>
+                                            Clear Filters
+                                        </a>
+                                    @else
+                                        <a href="{{ route('store.index') }}" 
+                                           class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                                            <i data-feather="external-link" class="w-4 h-4 mr-2"></i>
+                                            View Store
+                                        </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -186,7 +232,7 @@
         
         @if($orders && $ordersCount > 0 && $orders->hasPages())
             <div class="px-6 py-3 border-t border-gray-200 bg-gray-50">
-                {{ $orders->links() }}
+                {{ $orders->appends(request()->query())->links() }}
             </div>
         @endif
     </div>
