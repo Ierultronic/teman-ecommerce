@@ -44,7 +44,7 @@
             <div class="bg-white shadow overflow-hidden sm:rounded-md">
                 <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                     <h3 class="text-lg leading-6 font-medium text-gray-900">Products List</h3>
-                    <a href="{{ route('admin.products.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                    <a href="{{ route('admin.products.create') }}" class=" text-white px-4 py-2 rounded-md bg-orange-600 hover:bg-orange-700 transition-colors">
                         Add Product
                     </a>
                 </div>

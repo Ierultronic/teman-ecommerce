@@ -112,20 +112,32 @@
                                     <tr>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <div class="flex items-center">
-                                                @if($item->product->image)
-                                                    <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name }}" class="w-10 h-10 object-cover rounded-md mr-3">
+                                                @if($item->product && $item->product->image)
+                                                    <img src="{{ Storage::url($item->product->image) }}" alt="{{ $item->product->name ?? 'Deleted Product' }}" class="w-10 h-10 object-cover rounded-md mr-3">
                                                 @else
                                                     <div class="w-10 h-10 bg-gray-200 rounded-md mr-3 flex items-center justify-center">
                                                         <span class="text-gray-400 text-xs">No Image</span>
                                                     </div>
                                                 @endif
                                                 <div>
-                                                    <div class="text-sm font-medium text-gray-900">{{ $item->product->name }}</div>
+                                                    <div class="text-sm font-medium text-gray-900">
+                                                        {{ $item->product ? $item->product->name : 'Deleted Product' }}
+                                                        @if(!$item->product)
+                                                            <span class="text-xs text-red-500">(Product Deleted)</span>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {{ $item->productVariant ? $item->productVariant->variant_name : 'Base Product' }}
+                                            @if($item->productVariant)
+                                                {{ $item->productVariant->variant_name }}
+                                                @if($item->productVariant->trashed())
+                                                    <span class="text-xs text-red-500">(Variant Deleted)</span>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-500">No Variant</span>
+                                            @endif
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                             {{ $item->quantity }}
