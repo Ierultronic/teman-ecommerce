@@ -15,7 +15,7 @@
                 <p class="text-sm font-medium text-gray-600">Filtered Results</p>
                 <p class="text-2xl font-semibold text-gray-900">{{ $products->total() }}</p>
                 @if(request('name') || request('status'))
-                    <p class="text-xs text-blue-600">Showing filtered results</p>
+                <p class="text-xs text-blue-600">Showing filtered results</p>
                 @endif
             </div>
         </div>
@@ -82,20 +82,20 @@
             <!-- Name Filter -->
             <div>
                 <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Product Name</label>
-                <input type="text" 
-                       name="name" 
-                       id="name" 
-                       value="{{ request('name') }}"
-                       placeholder="Search by product name..."
-                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                <input type="text"
+                    name="name"
+                    id="name"
+                    value="{{ request('name') }}"
+                    placeholder="Search by product name..."
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
             </div>
 
             <!-- Status Filter -->
             <div>
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                <select name="status" 
-                        id="status" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                <select name="status"
+                    id="status"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                     <option value="all" {{ request('status') == 'all' || !request('status') ? 'selected' : '' }}>All Products</option>
                     <option value="active" {{ request('status') == 'active' ? 'selected' : '' }}>Active Only</option>
                     <option value="deleted" {{ request('status') == 'deleted' ? 'selected' : '' }}>Deleted Only</option>
@@ -104,13 +104,13 @@
 
             <!-- Filter Actions -->
             <div class="flex items-end space-x-3">
-                <button type="submit" 
-                        class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                <button type="submit"
+                    class="px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                     <i data-feather="search" class="w-4 h-4 mr-2 inline"></i>
                     Filter
                 </button>
-                <a href="{{ route('admin.products.index') }}" 
-                   class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
+                <a href="{{ route('admin.products.index') }}"
+                    class="px-4 py-2 border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                     <i data-feather="refresh-cw" class="w-4 h-4 mr-2 inline"></i>
                     Clear
                 </a>
@@ -223,17 +223,17 @@
                 </div>
                 <h3 class="text-lg font-medium text-gray-900 mb-2">
                     @if(request('name') || request('status'))
-                        No products match your filters
+                    No products match your filters
                     @else
-                        No products found
+                    No products found
                     @endif
                 </h3>
                 <p class="text-gray-500 mb-4">
                     @if(request('name') || request('status'))
-                        Try adjusting your search criteria or 
-                        <a href="{{ route('admin.products.index') }}" class="text-primary-600 hover:text-primary-700 underline">clear all filters</a>
+                    Try adjusting your search criteria or
+                    <a href="{{ route('admin.products.index') }}" class="text-primary-600 hover:text-primary-700 underline">clear all filters</a>
                     @else
-                        Get started by creating your first product
+                    Get started by creating your first product
                     @endif
                 </p>
                 @if(!request('name') && !request('status'))
@@ -368,17 +368,17 @@
                                 </div>
                                 <h3 class="text-lg font-medium text-gray-900 mb-2">
                                     @if(request('name') || request('status'))
-                                        No products match your filters
+                                    No products match your filters
                                     @else
-                                        No products found
+                                    No products found
                                     @endif
                                 </h3>
                                 <p class="text-gray-500 mb-4">
                                     @if(request('name') || request('status'))
-                                        Try adjusting your search criteria or 
-                                        <a href="{{ route('admin.products.index') }}" class="text-primary-600 hover:text-primary-700 underline">clear all filters</a>
+                                    Try adjusting your search criteria or
+                                    <a href="{{ route('admin.products.index') }}" class="text-primary-600 hover:text-primary-700 underline">clear all filters</a>
                                     @else
-                                        Get started by creating your first product
+                                    Get started by creating your first product
                                     @endif
                                 </p>
                                 @if(!request('name') && !request('status'))
