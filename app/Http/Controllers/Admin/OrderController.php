@@ -15,7 +15,7 @@ class OrderController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Order::with(['user', 'orderItems.product', 'orderItems.productVariant']);
+        $query = Order::with(['orderItems.product', 'orderItems.productVariant']);
         
         // Apply status filter
         if ($request->filled('status')) {
@@ -39,7 +39,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['user', 'orderItems.product', 'orderItems.productVariant']);
+        $order->load(['orderItems.product', 'orderItems.productVariant']);
         return View::make('admin.orders.show', compact('order'));
     }
 
