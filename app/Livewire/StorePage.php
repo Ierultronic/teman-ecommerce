@@ -239,7 +239,8 @@ class StorePage extends Component
             $this->reset(['customerName', 'customerEmail', 'customerPhone']);
             
             $this->dispatch('order-placed', [
-                'message' => 'Order placed successfully! Order ID: ' . $order->id
+                'message' => 'Your order has been placed successfully! We will process it shortly.',
+                'orderId' => $order->id
             ]);
 
         } catch (\Exception $e) {

@@ -1,4 +1,43 @@
 <div class="px-4 sm:px-6 lg:px-8">
+    <!-- Inline Success Message -->
+    <div x-data="{ show: false, message: '', orderId: '' }" 
+         x-show="show" 
+         x-on:order-placed.window="show = true; message = $event.detail.message; orderId = $event.detail.orderId; setTimeout(() => show = false, 15000)"
+         class="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 transform transition-all duration-500"
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="opacity-0 transform -translate-y-4"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100 transform translate-y-0"
+         x-transition:leave-end="opacity-0 transform -translate-y-4">
+        
+        <div class="flex items-start space-x-3">
+            <div class="flex-shrink-0">
+                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div class="flex-1">
+                <h3 class="text-lg font-medium text-green-800 mb-2">Order Confirmed!</h3>
+                <p class="text-green-700 mb-3" x-text="message"></p>
+                <div class="bg-green-100 border border-green-300 rounded-md p-3 mb-3" x-show="orderId">
+                    <p class="text-sm text-green-800 font-medium">Order ID: <span class="font-mono text-green-900 bg-green-200 px-2 py-1 rounded" x-text="orderId"></span></p>
+                    <p class="text-xs text-green-600 mt-1">Please save this reference number for tracking your order</p>
+                </div>
+                <div class="text-sm text-green-600">
+                    <p>• You will receive an email confirmation shortly</p>
+                    <p>• Our team will process your order within 24 hours</p>
+                    <p>• Use the Order ID above to track your order status</p>
+                </div>
+            </div>
+            <button @click="show = false" class="text-green-400 hover:text-green-600">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+    </div>
+
     <!-- Products Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         @forelse($products as $product)
@@ -250,8 +289,18 @@
                                 class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
                             Cancel
                         </button>
-                        <button type="submit" class="flex-1 bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
-                            Place Order
+                        <button type="submit" 
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50 cursor-not-allowed"
+                                class="flex-1 bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
+                            <span wire:loading.remove>Place Order</span>
+                            <span wire:loading class="flex items-center justify-center">
+                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Processing...
+                            </span>
                         </button>
                     </div>
                 </form>
@@ -259,11 +308,37 @@
         </div>
     @endif
 
-    <!-- Success Message -->
-    <div x-data="{ show: false, message: '' }" 
+    <!-- Bottom Toast Notification -->
+    <div x-data="{ show: false, message: '', orderId: '' }" 
          x-show="show" 
-         x-on:order-placed.window="show = true; message = $event.detail.message; setTimeout(() => show = false, 5000)"
-         class="fixed top-4 right-4 bg-orange-500 text-white px-6 py-3 rounded-md shadow-lg z-50">
-        <span x-text="message"></span>
+         x-on:order-placed.window="show = true; message = $event.detail.message; orderId = $event.detail.orderId; setTimeout(() => show = false, 10000)"
+         class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-white border border-green-200 text-gray-800 px-8 py-6 rounded-xl shadow-2xl z-50 max-w-lg w-full mx-4"
+         x-transition:enter="transition ease-out duration-500"
+         x-transition:enter-start="opacity-0 transform translate-y-full scale-95"
+         x-transition:enter-end="opacity-100 transform translate-y-0 scale-100"
+         x-transition:leave="transition ease-in duration-300"
+         x-transition:leave-start="opacity-100 transform translate-y-0 scale-100"
+         x-transition:leave-end="opacity-0 transform translate-y-full scale-95">
+        
+        <div class="text-center">
+            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Thank You!</h3>
+            <p class="text-sm text-gray-600 mb-3" x-text="message"></p>
+            <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4" x-show="orderId">
+                <p class="text-xs text-green-700 font-medium">Order ID: <span class="font-mono text-green-800" x-text="orderId"></span></p>
+                <p class="text-xs text-green-600 mt-1">Please save this for your records</p>
+            </div>
+            <div class="text-xs text-gray-500 mb-4">
+                <p>We'll send you an email confirmation shortly.</p>
+                <p>You can track your order status using the Order ID above.</p>
+            </div>
+            <button @click="show = false" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
+                Continue Shopping
+            </button>
+        </div>
     </div>
 </div>
