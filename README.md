@@ -93,6 +93,7 @@ A modern, feature-rich e-commerce system built with Laravel 12 and Livewire 3, f
 ## 🎯 Usage
 
 ### Admin Access
+- **URL admin login**: `/login`
 - **URL**: `/admin` (redirects to `/admin/products`)
 - **Login**: `admin@teman.com` / `admin123`
 - **Features**:
