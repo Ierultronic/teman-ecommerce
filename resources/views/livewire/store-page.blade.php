@@ -8,17 +8,21 @@
                         <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-48 object-cover">
                         <!-- Stock Status Badge -->
                         <div class="absolute top-2 right-2">
-                            @php
-                                $currentStock = $this->getDisplayStock($product->id);
-                            @endphp
-                            @if($currentStock > 0)
-                                @if($currentStock <= 5)
-                                    <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">Low Stock</span>
+                            @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                                @php
+                                    $currentStock = $this->getDisplayStock($product->id);
+                                @endphp
+                                @if($currentStock > 0)
+                                    @if($currentStock <= 5)
+                                        <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">Low Stock</span>
+                                    @else
+                                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">In Stock</span>
+                                    @endif
                                 @else
-                                    <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">In Stock</span>
+                                    <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Out of Stock</span>
                                 @endif
                             @else
-                                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Out of Stock</span>
+                                <span class="bg-gray-500 text-white text-xs px-2 py-1 rounded-full">Select Variant</span>
                             @endif
                         </div>
                     </div>
@@ -27,17 +31,21 @@
                         <span class="text-gray-400">No Image</span>
                         <!-- Stock Status Badge -->
                         <div class="absolute top-2 right-2">
-                            @php
-                                $currentStock = $this->getDisplayStock($product->id);
-                            @endphp
-                            @if($currentStock > 0)
-                                @if($currentStock <= 5)
-                                    <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">Low Stock</span>
+                            @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                                @php
+                                    $currentStock = $this->getDisplayStock($product->id);
+                                @endphp
+                                @if($currentStock > 0)
+                                    @if($currentStock <= 5)
+                                        <span class="bg-orange-500 text-white text-xs px-2 py-1 rounded-full">Low Stock</span>
+                                    @else
+                                        <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">In Stock</span>
+                                    @endif
                                 @else
-                                    <span class="bg-green-500 text-white text-xs px-2 py-1 rounded-full">In Stock</span>
+                                    <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Out of Stock</span>
                                 @endif
                             @else
-                                <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Out of Stock</span>
+                                <span class="bg-gray-500 text-white text-xs px-2 py-1 rounded-full">Select Variant</span>
                             @endif
                         </div>
                     </div>
@@ -53,18 +61,22 @@
                         @if($product->variants->count() > 0)
                             <div class="flex items-center space-x-2 mb-2">
                                 <span class="text-sm text-gray-600">Available Stock:</span>
-                                @php
-                                    $displayStock = $this->getDisplayStock($product->id);
-                                @endphp
-                                @if($displayStock > 0)
-                                    <span class="text-sm font-medium {{ $displayStock <= 5 ? 'text-orange-600' : 'text-green-600' }}">
-                                        {{ $displayStock }} available
-                                        @if($displayStock <= 5)
-                                            <span class="text-xs">(Low stock!)</span>
-                                        @endif
-                                    </span>
+                                @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                                    @php
+                                        $displayStock = $this->getDisplayStock($product->id);
+                                    @endphp
+                                    @if($displayStock > 0)
+                                        <span class="text-sm font-medium {{ $displayStock <= 5 ? 'text-orange-600' : 'text-green-600' }}">
+                                            {{ $displayStock }} available
+                                            @if($displayStock <= 5)
+                                                <span class="text-xs">(Low stock!)</span>
+                                            @endif
+                                        </span>
+                                    @else
+                                        <span class="text-sm font-medium text-red-600">Out of stock</span>
+                                    @endif
                                 @else
-                                    <span class="text-sm font-medium text-red-600">Out of stock</span>
+                                    <span class="text-sm text-gray-500">Select variant to see stock</span>
                                 @endif
                             </div>
                         @else
@@ -77,11 +89,11 @@
                     
                     @if($product->variants->count() > 0)
                         <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Variant:</label>
-                            <select wire:model="selectedVariant.{{ $product->id }}" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                                <option value="">Base Product</option>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Variant: *</label>
+                            <select wire:change="selectVariant({{ $product->id }}, $event.target.value)" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
+                                <option value="">Please select a variant</option>
                                 @foreach($product->variants as $variant)
-                                    <option value="{{ $variant->id }}" {{ $variant->stock <= 0 ? 'disabled' : '' }}>
+                                    <option value="{{ $variant->id }}" {{ $variant->stock <= 0 ? 'disabled' : '' }} {{ ($selectedVariant[$product->id] ?? '') == $variant->id ? 'selected' : '' }}>
                                         {{ $variant->variant_name }} 
                                         @if($variant->stock > 0)
                                             ({{ $variant->stock }} in stock)
@@ -91,6 +103,7 @@
                                     </option>
                                 @endforeach
                             </select>
+                            @error('variant') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
                         </div>
                     @endif
                     
@@ -100,59 +113,60 @@
                         <div class="flex items-center space-x-2">
                             <button wire:click="decrementQuantity({{ $product->id }})" 
                                     class="w-8 h-8 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center"
-                                    {{ ($quantity[$product->id] ?? 1) <= 1 ? 'disabled' : '' }}>
+                                    {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) <= 1) ? 'disabled' : '' }}>
                                 -
                             </button>
                             <input type="number" wire:model="quantity.{{ $product->id }}" 
-                                    class="w-16 text-center border border-gray-300 rounded-md px-2 py-1" 
+                                    class="w-16 text-center border border-gray-300 rounded-md px-2 py-1 {{ ($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') ? 'bg-gray-100 cursor-not-allowed' : '' }}" 
                                     min="1" max="{{ $this->getDisplayStock($product->id) }}" 
-                                    value="{{ $quantity[$product->id] ?? 1 }}">
+                                    value="{{ $quantity[$product->id] ?? 1 }}"
+                                    {{ ($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') ? 'disabled' : '' }}>
                             <button wire:click="incrementQuantity({{ $product->id }})" 
                                     class="w-8 h-8 bg-gray-200 text-gray-600 rounded-md hover:bg-gray-300 transition-colors flex items-center justify-center"
-                                    {{ ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id) ? 'disabled' : '' }}>
+                                    {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id)) ? 'disabled' : '' }}>
                                 +
                             </button>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            Max: {{ $this->getDisplayStock($product->id) }} available
+                            @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                                Max: {{ $this->getDisplayStock($product->id) }} available
+                            @else
+                                Please select a variant first
+                            @endif
                         </div>
                     </div>
                     
                     <!-- Cart Status -->
-                    @if($this->getCartQuantity($product->id, $selectedVariant[$product->id] ?? null) > 0)
+                    @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '' && $this->getCartQuantity($product->id, $selectedVariant[$product->id]) > 0)
                         <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-blue-700">
-                                    In cart: {{ $this->getCartQuantity($product->id, $selectedVariant[$product->id] ?? null) }} 
-                                    @if($selectedVariant[$product->id])
-                                        ({{ $product->variants->find($selectedVariant[$product->id])->variant_name ?? 'Unknown' }})
-                                    @else
-                                        (Base Product)
-                                    @endif
+                                    In cart: {{ $this->getCartQuantity($product->id, $selectedVariant[$product->id]) }} 
+                                    ({{ $product->variants->find($selectedVariant[$product->id])->variant_name ?? 'Unknown' }})
                                 </span>
                                 <span class="text-sm font-medium text-blue-700">
-                                    RM{{ number_format(($product->price * $this->getCartQuantity($product->id, $selectedVariant[$product->id] ?? null)), 2) }}
+                                    RM{{ number_format(($product->price * $this->getCartQuantity($product->id, $selectedVariant[$product->id])), 2) }}
                                 </span>
                             </div>
                         </div>
                     @endif
                     
                     <div class="flex items-center space-x-2">
-                        @if($this->getCartQuantity($product->id, $selectedVariant[$product->id] ?? null) > 0)
-                            <button wire:click="removeFromCart('{{ $this->getCartKey($product->id, $selectedVariant[$product->id] ?? null) }}')" 
+                        @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '' && $this->getCartQuantity($product->id, $selectedVariant[$product->id]) > 0)
+                            <button wire:click="removeFromCart('{{ $this->getCartKey($product->id, $selectedVariant[$product->id]) }}')" 
                                     class="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
                                 Remove from Cart
                             </button>
-                            <button wire:click="updateCart({{ $product->id }}, {{ $selectedVariant[$product->id] ?? 'null' }}, {{ $quantity[$product->id] ?? 1 }})" 
+                            <button wire:click="updateCart({{ $product->id }}, {{ $selectedVariant[$product->id] }}, {{ $quantity[$product->id] ?? 1 }})" 
                                     class="flex-1 {{ $this->getDisplayStock($product->id) > 0 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-400 cursor-not-allowed' }} text-white px-4 py-2 rounded-md transition-colors"
                                     {{ $this->getDisplayStock($product->id) <= 0 ? 'disabled' : '' }}>
                                 {{ $this->getDisplayStock($product->id) > 0 ? 'Update Cart' : 'Out of Stock' }}
                             </button>
                         @else
                             <button wire:click="addToCart({{ $product->id }}, {{ $selectedVariant[$product->id] ?? 'null' }}, {{ $quantity[$product->id] ?? 1 }})" 
-                                    class="flex-1 {{ $this->getDisplayStock($product->id) > 0 ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-400 cursor-not-allowed' }} text-white px-4 py-2 rounded-md transition-colors"
-                                    {{ $this->getDisplayStock($product->id) <= 0 ? 'disabled' : '' }}>
-                                {{ $this->getDisplayStock($product->id) > 0 ? 'Add to Cart' : 'Out of Stock' }}
+                                    class="flex-1 {{ (($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '') && $this->getDisplayStock($product->id) > 0) ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-400 cursor-not-allowed' }} text-white px-4 py-2 rounded-md transition-colors"
+                                    {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || $this->getDisplayStock($product->id) <= 0) ? 'disabled' : '' }}>
+                                {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '')) ? 'Select Variant' : ($this->getDisplayStock($product->id) > 0 ? 'Add to Cart' : 'Out of Stock') }}
                             </button>
                         @endif
                     </div>
