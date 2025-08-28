@@ -10,12 +10,35 @@ use Illuminate\Support\Facades\Storage;
 
 class ProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $products = Product::with(['creator', 'variants'])
-            ->withTrashed()
-            ->latest()
-            ->paginate(15);
+        $query = Product::with(['creator', 'variants']);
+
+        // Apply name filter
+        if ($request->filled('name')) {
+            $query->where('name', 'like', '%' . $request->name . '%');
+        }
+
+        // Apply status filter
+        if ($request->filled('status')) {
+            switch ($request->status) {
+                case 'active':
+                    $query->whereNull('deleted_at');
+                    break;
+                case 'deleted':
+                    $query->onlyTrashed();
+                    break;
+                case 'all':
+                default:
+                    $query->withTrashed();
+                    break;
+            }
+        } else {
+            // Default to showing all products (including deleted)
+            $query->withTrashed();
+        }
+
+        $products = $query->latest()->paginate(15)->withQueryString();
             
         return view('admin.products.index', compact('products'));
     }
