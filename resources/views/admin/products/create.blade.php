@@ -62,10 +62,14 @@
 
             <!-- Variants Section -->
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-3">Product Variants</label>
+                <label class="block text-sm font-medium text-gray-700 mb-3">Product Variants *</label>
+                <p class="text-sm text-gray-500 mb-3">Add at least one variant (e.g., Size, Color, etc.) with stock quantity</p>
                 <div id="variants-container" class="space-y-3">
-                    <!-- Variant template will be added here -->
+                    <!-- Default variant will be added here -->
                 </div>
+                @error('variants')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
                 <button type="button" onclick="addVariant()" 
                         class="mt-3 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
                     <i data-feather="plus" class="w-4 h-4 mr-2"></i>
@@ -79,7 +83,7 @@
                class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
                 Cancel
             </a>
-            <button type="submit" 
+            <button type="submit" onclick="return validateForm()"
                     class="text-white px-4 py-2 rounded-md bg-primary-600 hover:bg-primary-700 transition-colors">
                 <i data-feather="save" class="w-4 h-4 mr-2 inline"></i>
                 Create Product
@@ -99,10 +103,16 @@
             <div class="flex-1">
                 <input type="text" name="variants[${variantCount}][variant_name]" placeholder="Variant name (e.g., Size, Color)" required
                        class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                @error('variants.*.variant_name')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
             <div class="w-24">
                 <input type="number" name="variants[${variantCount}][stock]" placeholder="Stock" min="0" required
                        class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                @error('variants.*.stock')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
             </div>
             <button type="button" onclick="removeVariant(this)" 
                     class="text-red-600 hover:text-red-800 px-2 py-1">
@@ -120,6 +130,25 @@
 
     function removeVariant(button) {
         button.parentElement.remove();
+    }
+
+    // Add a default variant when the page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        addVariant();
+    });
+
+    function validateForm() {
+        const variantInputs = document.querySelectorAll('input[name*="[variant_name]"]');
+        const stockInputs = document.querySelectorAll('input[name*="[stock]"]');
+        
+        for (let i = 0; i < variantInputs.length; i++) {
+            if (!variantInputs[i].value.trim() || !stockInputs[i].value.trim()) {
+                alert('Please fill in all variant fields (name and stock)');
+                return false;
+            }
+        }
+        
+        return true;
     }
 </script>
 @endsection

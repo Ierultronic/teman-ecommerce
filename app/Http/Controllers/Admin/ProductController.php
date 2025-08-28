@@ -55,6 +55,9 @@ class ProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'variants' => 'required|array|min:1',
+            'variants.*.variant_name' => 'required|string|max:255',
+            'variants.*.stock' => 'required|integer|min:0',
         ]);
 
         $data = $request->only(['name', 'description', 'price']);
@@ -64,7 +67,27 @@ class ProductController extends Controller
             $data['image'] = $request->file('image')->store('products', 'public');
         }
 
-        Product::create($data);
+        // Create the product
+        $product = Product::create($data);
+
+        // Create variants if they exist
+        if ($request->has('variants') && is_array($request->variants)) {
+            foreach ($request->variants as $variantData) {
+                if (!empty($variantData['variant_name']) && isset($variantData['stock'])) {
+                    $product->variants()->create([
+                        'variant_name' => $variantData['variant_name'],
+                        'stock' => $variantData['stock'],
+                    ]);
+                }
+            }
+        }
+        
+        // Log for debugging
+        \Log::info('Product created with variants', [
+            'product_id' => $product->id,
+            'variants_count' => $request->has('variants') ? count($request->variants) : 0,
+            'variants_data' => $request->variants ?? []
+        ]);
 
         return redirect()->route('admin.products.index')->with('success', 'Product created successfully!');
     }
@@ -84,6 +107,9 @@ class ProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'variants' => 'required|array|min:1',
+            'variants.*.variant_name' => 'required|string|max:255',
+            'variants.*.stock' => 'required|integer|min:0',
         ]);
 
         $data = $request->only(['name', 'description', 'price']);
@@ -97,6 +123,22 @@ class ProductController extends Controller
         }
 
         $product->update($data);
+
+        // Handle variants update
+        if ($request->has('variants') && is_array($request->variants)) {
+            // Delete existing variants
+            $product->variants()->delete();
+            
+            // Create new variants
+            foreach ($request->variants as $variantData) {
+                if (!empty($variantData['variant_name']) && isset($variantData['stock'])) {
+                    $product->variants()->create([
+                        'variant_name' => $variantData['variant_name'],
+                        'stock' => $variantData['stock'],
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('admin.products.index')->with('success', 'Product updated successfully!');
     }
