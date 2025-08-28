@@ -71,7 +71,7 @@ A simple e-commerce system built with Laravel and Livewire, featuring product ma
 
 ### Admin Access
 - **URL**: `/admin/products`
-- **Login**: `admin@example.com` / `password`
+- **Login**: `admin@teman.com` / `admin123`
 - **Features**:
   - Manage products and variants
   - View and update orders
