@@ -82,12 +82,6 @@ class ProductController extends Controller
             }
         }
         
-        // Log for debugging
-        \Log::info('Product created with variants', [
-            'product_id' => $product->id,
-            'variants_count' => $request->has('variants') ? count($request->variants) : 0,
-            'variants_data' => $request->variants ?? []
-        ]);
 
         return redirect()->route('admin.products.index')->with('success', 'Product created successfully!');
     }

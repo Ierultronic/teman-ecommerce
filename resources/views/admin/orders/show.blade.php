@@ -52,7 +52,7 @@
             @endif
             <div>
                 <dt class="text-sm font-medium text-gray-500">Order Date</dt>
-                <dd class="mt-1 text-sm text-gray-900">{{ $order->created_at->format('M d, Y H:i') }}</dd>
+                <dd class="mt-1 text-sm text-gray-900">{{ $order->created_at->format('d/m/Y H:ia') }}</dd>
             </div>
             <div>
                 <dt class="text-sm font-medium text-gray-500">Total Amount</dt>
