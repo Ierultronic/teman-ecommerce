@@ -191,14 +191,6 @@
                                         Restore
                                     </button>
                                 </form>
-                                <form action="{{ route('admin.products.force-delete', $product) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this product? This action cannot be undone and will remove all order history related to this product.')">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-red-600 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-colors">
-                                        <i data-feather="trash-2" class="w-3 h-3 mr-1"></i>
-                                        Delete Forever
-                                    </button>
-                                </form>
                             </div>
                             @else
                             <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this product? This action cannot be undone.')">
@@ -335,14 +327,6 @@
                                         <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-green-300 shadow-sm text-xs font-medium rounded text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
                                             <i data-feather="refresh-cw" class="w-3 h-3 mr-1"></i>
                                             Restore
-                                        </button>
-                                    </form>
-                                    <form action="{{ route('admin.products.force-delete', $product) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to PERMANENTLY delete this product? This action cannot be undone and will remove all order history related to this product.')">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-red-600 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-600 transition-colors">
-                                            <i data-feather="trash-2" class="w-3 h-3 mr-1"></i>
-                                            Delete Forever
                                         </button>
                                     </form>
                                 </div>
