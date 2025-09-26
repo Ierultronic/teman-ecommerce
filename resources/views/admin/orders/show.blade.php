@@ -23,12 +23,14 @@
             <div class="flex items-center space-x-3">
                 <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full 
                     @if($order->status === 'pending') bg-yellow-100 text-yellow-800
+                    @elseif($order->status === 'pending_verification') bg-orange-100 text-orange-800
+                    @elseif($order->status === 'paid') bg-green-100 text-green-800
                     @elseif($order->status === 'processing') bg-blue-100 text-blue-800
                     @elseif($order->status === 'shipped') bg-purple-100 text-purple-800
                     @elseif($order->status === 'delivered') bg-green-100 text-green-800
                     @else bg-red-100 text-red-800
                     @endif">
-                    {{ ucfirst($order->status) }}
+                    {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                 </span>
             </div>
         </div>
@@ -58,6 +60,24 @@
                 <dt class="text-sm font-medium text-gray-500">Total Amount</dt>
                 <dd class="mt-1 text-lg font-semibold text-green-600">RM{{ number_format($order->total_price, 2) }}</dd>
             </div>
+            @if($order->payment_method)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Payment Method</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ strtoupper($order->payment_method) }}</dd>
+                </div>
+            @endif
+            @if($order->payment_reference)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Payment Reference</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->payment_reference }}</dd>
+                </div>
+            @endif
+            @if($order->payment_verified_at)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Payment Verified</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->payment_verified_at->format('M d, Y H:i') }}</dd>
+                </div>
+            @endif
         </dl>
     </div>
 </div>
@@ -257,6 +277,59 @@
     </div>
 </div>
 
+<!-- Payment Verification (for QR payments) -->
+@if($order->status === 'pending_verification' && $order->payment_method === 'qr')
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Payment Verification</h3>
+        <p class="mt-1 text-sm text-gray-500">Verify the payment receipt and reference number</p>
+    </div>
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        @if($order->payment_receipt_path)
+            <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Payment Receipt</h4>
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <img src="{{ Storage::url($order->payment_receipt_path) }}" 
+                         alt="Payment Receipt" 
+                         class="max-w-full h-auto max-h-96 mx-auto">
+                </div>
+            </div>
+        @endif
+        
+        @if($order->payment_reference)
+            <div class="mb-4">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Payment Reference</h4>
+                <p class="text-sm text-gray-900 font-mono bg-gray-50 p-2 rounded">{{ $order->payment_reference }}</p>
+            </div>
+        @endif
+        
+        <div class="flex items-center space-x-4">
+            <form action="{{ route('admin.orders.verify-payment', $order) }}" method="POST" class="inline">
+                @csrf
+                <input type="hidden" name="verified" value="1">
+                <button type="submit" 
+                        class="text-white px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 transition-colors"
+                        onclick="return confirm('Are you sure you want to verify this payment?')">
+                    <i data-feather="check" class="w-4 h-4 mr-2 inline"></i>
+                    Verify Payment
+                </button>
+            </form>
+            
+            <form action="{{ route('admin.orders.verify-payment', $order) }}" method="POST" class="inline">
+                @csrf
+                <input type="hidden" name="verified" value="0">
+                <button type="submit" 
+                        class="text-white px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors"
+                        onclick="return confirm('Are you sure you want to reject this payment? This will cancel the order.')">
+                    <i data-feather="x" class="w-4 h-4 mr-2 inline"></i>
+                    Reject Payment
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+@endif
+
 <!-- Update Status -->
 <div class="bg-white shadow overflow-hidden sm:rounded-lg">
     <div class="px-4 py-5 sm:px-6">
@@ -269,6 +342,8 @@
             <div class="flex items-center space-x-4">
                 <select name="status" class="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                     <option value="pending" {{ $order->status === 'pending' ? 'selected' : '' }}>Pending</option>
+                    <option value="pending_verification" {{ $order->status === 'pending_verification' ? 'selected' : '' }}>Pending Verification</option>
+                    <option value="paid" {{ $order->status === 'paid' ? 'selected' : '' }}>Paid</option>
                     <option value="processing" {{ $order->status === 'processing' ? 'selected' : '' }}>Processing</option>
                     <option value="shipped" {{ $order->status === 'shipped' ? 'selected' : '' }}>Shipped</option>
                     <option value="delivered" {{ $order->status === 'delivered' ? 'selected' : '' }}>Delivered</option>

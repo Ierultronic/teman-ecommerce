@@ -194,6 +194,57 @@
                     </div>
                 </div>
 
+                <!-- Payment Method Selection -->
+                <div class="bg-green-50 rounded-lg p-4">
+                    <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">
+                        <svg class="h-5 w-5 text-green-600 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                        Payment Method *
+                    </h4>
+                    
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <!-- FPX Payment Option -->
+                            <label class="relative cursor-pointer">
+                                <input type="radio" wire:model="paymentMethod" value="fpx" class="sr-only peer" required>
+                                <div class="p-4 border-2 border-gray-200 rounded-lg peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300 transition-all">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900">FPX Online Banking</div>
+                                            <div class="text-sm text-gray-600">Pay with your bank account</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+
+                            <!-- QR Payment Option -->
+                            <label class="relative cursor-pointer">
+                                <input type="radio" wire:model="paymentMethod" value="qr" class="sr-only peer" required>
+                                <div class="p-4 border-2 border-gray-200 rounded-lg peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300 transition-all">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="flex-shrink-0">
+                                            <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <div class="font-medium text-gray-900">QR Code Payment</div>
+                                            <div class="text-sm text-gray-600">Scan QR and upload receipt</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </label>
+                        </div>
+                        @error('paymentMethod') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
                 <!-- Order Notes -->
                 <div class="bg-yellow-50 rounded-lg p-4">
                     <h4 class="text-lg font-semibold text-gray-900 mb-3 flex items-center">

@@ -32,12 +32,18 @@ class Order extends Model
         'order_notes',
         'same_as_billing',
         'total_price',
-        'status'
+        'status',
+        'payment_method',
+        'payment_reference',
+        'payment_receipt_path',
+        'payment_verified_at',
+        'payment_verified_by'
     ];
 
     protected $casts = [
         'total_price' => 'decimal:2',
         'same_as_billing' => 'boolean',
+        'payment_verified_at' => 'datetime',
     ];
 
     public function orderItems(): HasMany

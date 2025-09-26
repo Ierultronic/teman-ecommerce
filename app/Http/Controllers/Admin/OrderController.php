@@ -46,11 +46,38 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
-            'status' => 'required|in:pending,processing,shipped,delivered,cancelled'
+            'status' => 'required|in:pending,pending_verification,paid,processing,shipped,delivered,cancelled'
         ]);
 
         $order->update(['status' => $request->status]);
 
         return Redirect::back()->with('success', 'Order status updated successfully!');
+    }
+
+    public function verifyPayment(Request $request, Order $order)
+    {
+        $request->validate([
+            'verified' => 'required|boolean'
+        ]);
+
+        if ($request->verified) {
+            $order->update([
+                'status' => 'processing',
+                'payment_verified_at' => now(),
+                'payment_verified_by' => auth()->id(),
+            ]);
+            
+            $message = 'Payment verified successfully! Order is now being processed.';
+        } else {
+            $order->update([
+                'status' => 'cancelled',
+                'payment_verified_at' => now(),
+                'payment_verified_by' => auth()->id(),
+            ]);
+            
+            $message = 'Payment rejected. Order cancelled.';
+        }
+
+        return Redirect::back()->with('success', $message);
     }
 }

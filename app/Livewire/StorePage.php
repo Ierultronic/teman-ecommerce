@@ -39,6 +39,7 @@ class StorePage extends Component
     public $orderNotes = '';
     public $sameAsBilling = true;
     public $showOrderForm = false;
+    public $paymentMethod = '';
     public $showProductModal = false;
     public $selectedProduct = null;
     public $selectedVariant = [];
@@ -303,6 +304,7 @@ class StorePage extends Component
             'customerPostalCode' => 'required|string|max:20',
             'customerCountry' => 'required|string|max:100',
             'orderNotes' => 'nullable|string|max:1000',
+            'paymentMethod' => 'required|in:fpx,qr',
         ];
 
         // Add shipping validation rules only if shipping is different from billing
@@ -353,7 +355,8 @@ class StorePage extends Component
                 'order_notes' => $this->orderNotes,
                 'same_as_billing' => $this->sameAsBilling,
                 'total_price' => $totalPrice,
-                'status' => 'pending',
+                'status' => 'pending_verification',
+                'payment_method' => $this->paymentMethod,
             ]);
 
             foreach ($this->cart as $item) {
@@ -400,13 +403,15 @@ class StorePage extends Component
                 'shippingName', 'shippingEmail', 'shippingPhone',
                 'shippingAddressLine1', 'shippingAddressLine2', 'shippingCity',
                 'shippingState', 'shippingPostalCode', 'shippingCountry',
-                'orderNotes', 'sameAsBilling'
+                'orderNotes', 'sameAsBilling', 'paymentMethod'
             ]);
             
-            $this->dispatch('order-placed', [
-                'message' => 'Your order has been placed successfully! We will process it shortly.',
-                'orderId' => $order->id
-            ]);
+            // Redirect based on payment method
+            if ($this->paymentMethod === 'fpx') {
+                return redirect()->route('payment.fpx', ['orderId' => $order->id]);
+            } else {
+                return redirect()->route('payment.qr', ['orderId' => $order->id]);
+            }
 
         } catch (\Exception $e) {
             DB::rollBack();

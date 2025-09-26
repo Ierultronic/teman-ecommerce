@@ -21,10 +21,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class)->except(['create', 'store']);
     Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
+    Route::post('orders/{order}/verify-payment', [App\Http\Controllers\Admin\OrderController::class, 'verifyPayment'])->name('orders.verify-payment');
 });
 
 // Order placement (public)
 Route::post('orders', [OrderController::class, 'store'])->name('orders.store');
+
+// Payment routes (public)
+Route::get('payment/fpx/{orderId}', App\Livewire\FpxPaymentPage::class)->name('payment.fpx');
+Route::get('payment/qr/{orderId}', App\Livewire\QrPaymentPage::class)->name('payment.qr');
+Route::post('payment/fpx/callback', [App\Http\Controllers\PaymentController::class, 'fpxCallback'])->name('payment.fpx.callback');
+Route::get('payment/fpx/success/{order}', [App\Http\Controllers\PaymentController::class, 'fpxSuccess'])->name('payment.fpx.success');
 
 // Authentication routes
 Route::get('login', [AuthController::class, 'showLogin'])->name('login');
