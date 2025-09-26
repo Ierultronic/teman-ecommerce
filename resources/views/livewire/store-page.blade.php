@@ -1,27 +1,5 @@
 <div class="min-h-screen bg-gray-50">
-    <!-- Header Section -->
-    <div class="bg-white shadow-sm border-b">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Our Products</h1>
-                    <p class="text-gray-600 mt-1">Discover our amazing collection</p>
-                </div>
-                @if(count($cart) > 0)
-                    <div class="flex items-center space-x-4">
-                        <div class="text-right">
-                            <div class="text-sm text-gray-600">Items in cart</div>
-                            <div class="text-2xl font-bold text-orange-600">{{ $this->getCartCount() }}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="text-sm text-gray-600">Total</div>
-                            <div class="text-2xl font-bold text-green-600">RM{{ number_format($this->getCartTotal(), 2) }}</div>
-                        </div>
-                    </div>
-                @endif
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Success Message -->
     <div x-data="{ show: false, message: '', orderId: '' }" 

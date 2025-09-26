@@ -365,7 +365,7 @@ class StorePage extends Component
                         ->first();
                     
                     if (!$variant) {
-                        throw new \Exception("Insufficient stock for variant. Only {$variant->stock ?? 0} items available.");
+                        throw new \Exception("Insufficient stock for variant. Item may have been sold out.");
                     }
                 }
 
