@@ -11,9 +11,7 @@ Route::get('/', [StoreController::class, 'index'])->name('store.index');
 
 // Admin routes (protected)
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', function() {
-        return redirect()->route('admin.products.index');
-    })->name('dashboard');
+    Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
     // Custom product routes (must come before resource route)
     Route::patch('products/{id}/restore', [App\Http\Controllers\Admin\ProductController::class, 'restore'])->name('products.restore');
