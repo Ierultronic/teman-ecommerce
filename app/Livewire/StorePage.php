@@ -357,6 +357,18 @@ class StorePage extends Component
             ]);
 
             foreach ($this->cart as $item) {
+                // First, validate stock availability atomically
+                if ($item['variant_id']) {
+                    $variant = ProductVariant::where('id', $item['variant_id'])
+                        ->where('stock', '>=', $item['quantity'])
+                        ->lockForUpdate()
+                        ->first();
+                    
+                    if (!$variant) {
+                        throw new \Exception("Insufficient stock for variant. Only {$variant->stock ?? 0} items available.");
+                    }
+                }
+
                 $order->orderItems()->create([
                     'product_id' => $item['product_id'],
                     'product_variant_id' => $item['variant_id'],
@@ -364,10 +376,15 @@ class StorePage extends Component
                     'price' => $item['price'],
                 ]);
 
-                // Update stock if variant exists
+                // Update stock atomically - this will fail if stock goes negative
                 if ($item['variant_id']) {
-                    $variant = ProductVariant::find($item['variant_id']);
-                    $variant->decrement('stock', $item['quantity']);
+                    $affectedRows = ProductVariant::where('id', $item['variant_id'])
+                        ->where('stock', '>=', $item['quantity'])
+                        ->decrement('stock', $item['quantity']);
+                    
+                    if ($affectedRows === 0) {
+                        throw new \Exception("Insufficient stock for variant. Item may have been sold out.");
+                    }
                 }
             }
 

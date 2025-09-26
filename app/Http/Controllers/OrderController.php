@@ -41,9 +41,15 @@ class OrderController extends Controller
                 $variant = null;
                 
                 if (isset($item['variant_id'])) {
-                    $variant = $product->variants()->findOrFail($item['variant_id']);
-                    if ($variant->stock < $item['quantity']) {
-                        throw new \Exception("Insufficient stock for variant: {$variant->variant_name}");
+                    // Use atomic stock check with row locking
+                    $variant = $product->variants()
+                        ->where('id', $item['variant_id'])
+                        ->where('stock', '>=', $item['quantity'])
+                        ->lockForUpdate()
+                        ->first();
+                    
+                    if (!$variant) {
+                        throw new \Exception("Insufficient stock for variant. Item may have been sold out.");
                     }
                 }
 
@@ -69,10 +75,15 @@ class OrderController extends Controller
             foreach ($orderItems as $item) {
                 $order->orderItems()->create($item);
                 
-                // Update stock if variant exists
+                // Update stock atomically - this will fail if stock goes negative
                 if (isset($item['product_variant_id'])) {
-                    $variant = ProductVariant::find($item['product_variant_id']);
-                    $variant->decrement('stock', $item['quantity']);
+                    $affectedRows = ProductVariant::where('id', $item['product_variant_id'])
+                        ->where('stock', '>=', $item['quantity'])
+                        ->decrement('stock', $item['quantity']);
+                    
+                    if ($affectedRows === 0) {
+                        throw new \Exception("Insufficient stock for variant. Item may have been sold out.");
+                    }
                 }
             }
 
