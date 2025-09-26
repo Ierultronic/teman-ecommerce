@@ -15,11 +15,13 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'variant_name',
-        'stock'
+        'stock',
+        'price'
     ];
 
     protected $casts = [
         'stock' => 'integer',
+        'price' => 'decimal:2',
     ];
 
     public function product(): BelongsTo
@@ -38,6 +40,15 @@ class ProductVariant extends Model
     public function getRouteKeyName()
     {
         return 'id';
+    }
+
+    /**
+     * Get the effective price for this variant.
+     * Returns the variant's price if set, otherwise returns the product's base price.
+     */
+    public function getEffectivePriceAttribute()
+    {
+        return $this->price ?? $this->product->price;
     }
 
     /**

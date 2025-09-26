@@ -87,6 +87,17 @@
                                        value="{{ $variant->stock }}" placeholder="Stock" min="0" required
                                        class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
                             </div>
+                            <div class="w-28">
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 text-xs">RM</span>
+                                    </div>
+                                    <input type="number" name="variants[{{ $index }}][price]" 
+                                           value="{{ $variant->price }}" placeholder="Price" step="0.01" min="0"
+                                           class="pl-8 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                                </div>
+                                <p class="text-xs text-gray-500 mt-1">Leave empty for base price</p>
+                            </div>
                             <button type="button" onclick="removeVariant(this)" 
                                     class="text-red-600 hover:text-red-800 px-2 py-1">
                                 <i data-feather="trash-2" class="w-4 h-4"></i>
@@ -131,6 +142,16 @@
             <div class="w-24">
                 <input type="number" name="variants[${variantCount}][stock]" placeholder="Stock" min="0" required
                        class="block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+            </div>
+            <div class="w-28">
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                        <span class="text-gray-500 text-xs">RM</span>
+                    </div>
+                    <input type="number" name="variants[${variantCount}][price]" placeholder="Price" step="0.01" min="0"
+                           class="pl-8 block w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Leave empty for base price</p>
             </div>
             <button type="button" onclick="removeVariant(this)" 
                     class="text-red-600 hover:text-red-800 px-2 py-1">

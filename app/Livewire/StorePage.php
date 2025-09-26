@@ -39,14 +39,19 @@ class StorePage extends Component
     public $orderNotes = '';
     public $sameAsBilling = true;
     public $showOrderForm = false;
+    public $showProductModal = false;
+    public $selectedProduct = null;
     public $selectedVariant = [];
     public $quantity = [];
+    
+    // Computed properties for current product modal
+    public $currentVariantId = null;
+    public $currentVariant = null;
+    public $currentStock = 0;
 
     public function mount()
     {
-        $this->products = Product::with(['variants' => function($query) {
-            $query->where('stock', '>', 0);
-        }])->latest()->get();
+        $this->products = Product::with(['variants'])->latest()->get();
         
         // Add stock information to each product
         foreach ($this->products as $product) {
@@ -108,6 +113,9 @@ class StorePage extends Component
         
         $cartKey = $productId . '_' . $variantId;
         
+        // Use variant price if available, otherwise use product price
+        $price = $variant->price ?? $product->price;
+        
         if (isset($this->cart[$cartKey])) {
             // If item already exists, update the quantity instead of adding
             $this->cart[$cartKey]['quantity'] = $quantity;
@@ -119,7 +127,7 @@ class StorePage extends Component
                 'quantity' => $quantity,
                 'product_name' => $product->name,
                 'variant_name' => $variant->variant_name,
-                'price' => $product->price,
+                'price' => $price,
             ];
         }
 
@@ -210,6 +218,46 @@ class StorePage extends Component
         }
         
         $this->showOrderForm = true;
+    }
+
+    public function openProductModal($productId)
+    {
+        $this->selectedProduct = $this->products->find($productId);
+        if ($this->selectedProduct) {
+            $this->showProductModal = true;
+            // Initialize quantity for this product if not set
+            if (!isset($this->quantity[$productId])) {
+                $this->quantity[$productId] = 1;
+            }
+            // Update current variant properties
+            $this->updateCurrentVariantProperties();
+        }
+    }
+
+    public function closeProductModal()
+    {
+        $this->showProductModal = false;
+        $this->selectedProduct = null;
+        $this->currentVariantId = null;
+        $this->currentVariant = null;
+        $this->currentStock = 0;
+    }
+
+    public function updateCurrentVariantProperties()
+    {
+        if (!$this->selectedProduct) {
+            $this->currentVariantId = null;
+            $this->currentVariant = null;
+            $this->currentStock = 0;
+            return;
+        }
+
+        $this->currentVariantId = $this->selectedVariant[$this->selectedProduct->id] ?? null;
+        $this->currentVariant = $this->currentVariantId ? $this->selectedProduct->variants->find($this->currentVariantId) : null;
+        $this->currentStock = $this->getDisplayStock($this->selectedProduct->id);
+        
+        // Force a re-render to update the UI
+        $this->dispatch('$refresh');
     }
 
     public function updatedSameAsBilling($value)
@@ -379,13 +427,33 @@ class StorePage extends Component
         return 0;
     }
 
+    public function getTotalStock($productId)
+    {
+        $product = $this->products->find($productId);
+        if (!$product) return 0;
+        
+        return $product->variants->sum('stock');
+    }
+
     public function selectVariant($productId, $variantId)
     {
+        // Check if variant exists and has stock
+        $product = $this->products->find($productId);
+        if (!$product) return;
+        
+        $variant = $product->variants->find($variantId);
+        if (!$variant || $variant->stock <= 0) {
+            $this->addError('variant', 'Selected variant is not available or out of stock.');
+            return;
+        }
+        
         // Set the selected variant for the product
         $this->selectedVariant[$productId] = $variantId;
         
-        // Reset quantity to 1 when variant changes
-        $this->quantity[$productId] = 1;
+        // Initialize quantity to 1 when variant is selected (if not already set or is 0)
+        if (!isset($this->quantity[$productId]) || $this->quantity[$productId] <= 0) {
+            $this->quantity[$productId] = 1;
+        }
         
         // Validate that the quantity doesn't exceed available stock
         $availableStock = $this->getDisplayStock($productId);
@@ -394,6 +462,9 @@ class StorePage extends Component
         } elseif ($this->quantity[$productId] > $availableStock) {
             $this->quantity[$productId] = $availableStock;
         }
+        
+        // Update current variant properties
+        $this->updateCurrentVariantProperties();
     }
 
     public function updatedSelectedVariant($value, $key)
@@ -403,19 +474,12 @@ class StorePage extends Component
         if (count($parts) >= 2) {
             $productId = $parts[1];
             
-            // Ensure the selectedVariant is properly set
-            $this->selectedVariant[$productId] = $value;
+            // Call selectVariant to handle the selection properly
+            $this->selectVariant($productId, $value);
             
-            // Reset and validate quantity when variant changes
-            $availableStock = $this->getDisplayStock($productId);
-            if ($availableStock <= 0) {
-                $this->quantity[$productId] = 0;
-            } else {
-                $this->quantity[$productId] = 1;
-            }
+            // Always update current variant properties when variant is selected
+            $this->updateCurrentVariantProperties();
         }
-        
-        // No need for $refresh, Livewire will handle the update automatically
     }
 
     public function updatedQuantity($value, $key)

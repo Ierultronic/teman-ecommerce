@@ -58,6 +58,7 @@ class ProductController extends Controller
             'variants' => 'required|array|min:1',
             'variants.*.variant_name' => 'required|string|max:255',
             'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.price' => 'nullable|numeric|min:0',
         ]);
 
         $data = $request->only(['name', 'description', 'price']);
@@ -74,9 +75,15 @@ class ProductController extends Controller
         if ($request->has('variants') && is_array($request->variants)) {
             foreach ($request->variants as $variantData) {
                 if (!empty($variantData['variant_name']) && isset($variantData['stock'])) {
+                    $variantPrice = null;
+                    if (!empty($variantData['price']) && $variantData['price'] > 0) {
+                        $variantPrice = $variantData['price'];
+                    }
+                    
                     $product->variants()->create([
                         'variant_name' => $variantData['variant_name'],
                         'stock' => $variantData['stock'],
+                        'price' => $variantPrice,
                     ]);
                 }
             }
@@ -104,6 +111,7 @@ class ProductController extends Controller
             'variants' => 'required|array|min:1',
             'variants.*.variant_name' => 'required|string|max:255',
             'variants.*.stock' => 'required|integer|min:0',
+            'variants.*.price' => 'nullable|numeric|min:0',
         ]);
 
         $data = $request->only(['name', 'description', 'price']);
@@ -126,9 +134,15 @@ class ProductController extends Controller
             // Create new variants
             foreach ($request->variants as $variantData) {
                 if (!empty($variantData['variant_name']) && isset($variantData['stock'])) {
+                    $variantPrice = null;
+                    if (!empty($variantData['price']) && $variantData['price'] > 0) {
+                        $variantPrice = $variantData['price'];
+                    }
+                    
                     $product->variants()->create([
                         'variant_name' => $variantData['variant_name'],
                         'stock' => $variantData['stock'],
+                        'price' => $variantPrice,
                     ]);
                 }
             }

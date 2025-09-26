@@ -143,6 +143,19 @@
                                 <span>ID: #{{ $product->id }}</span>
                                 <span>•</span>
                                 <span class="font-medium text-gray-900">RM{{ number_format($product->price, 2) }}</span>
+                                @if($product->variants->count() > 0)
+                                    @php
+                                        $effectivePrices = $product->variants->map(function($variant) use ($product) {
+                                            return $variant->price ?? $product->price;
+                                        });
+                                        $minPrice = $effectivePrices->min();
+                                        $maxPrice = $effectivePrices->max();
+                                    @endphp
+                                    @if($minPrice != $maxPrice)
+                                        <span>•</span>
+                                        <span class="text-xs">RM{{ number_format($minPrice, 2) }}-{{ number_format($maxPrice, 2) }}</span>
+                                    @endif
+                                @endif
                             </div>
                         </div>
 
@@ -275,11 +288,24 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900">RM{{ number_format($product->price, 2) }}</div>
-                            <!-- @if($product->variants->count() > 0)
-                                        <div class="text-xs text-gray-500">
-                                            {{ $product->variants->min('price') }} - {{ $product->variants->max('price') }}
-                                        </div>
-                                    @endif -->
+                            @if($product->variants->count() > 0)
+                                @php
+                                    $effectivePrices = $product->variants->map(function($variant) use ($product) {
+                                        return $variant->price ?? $product->price;
+                                    });
+                                    $minPrice = $effectivePrices->min();
+                                    $maxPrice = $effectivePrices->max();
+                                @endphp
+                                @if($minPrice != $maxPrice)
+                                    <div class="text-xs text-gray-500">
+                                        RM{{ number_format($minPrice, 2) }} - RM{{ number_format($maxPrice, 2) }}
+                                    </div>
+                                @else
+                                    <div class="text-xs text-gray-500">
+                                        All variants: RM{{ number_format($minPrice, 2) }}
+                                    </div>
+                                @endif
+                            @endif
                         </td>
                         <td class="px-6 py-4">
                             <div class="flex items-center">
