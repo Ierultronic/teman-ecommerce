@@ -15,10 +15,26 @@
 
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-0">
                 <!-- Product Image Section -->
-                <div class="relative bg-gray-50 rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none min-h-[400px] lg:min-h-[500px]">
+                <div class="relative bg-gray-50 rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none min-h-[400px] lg:min-h-[500px] overflow-hidden"
+                     x-data="{ 
+                        isHovering: false, 
+                        mouseX: 0, 
+                        mouseY: 0,
+                        handleMouseMove(event) {
+                            if (!this.isHovering) return;
+                            const rect = event.currentTarget.getBoundingClientRect();
+                            this.mouseX = ((event.clientX - rect.left) / rect.width) * 100;
+                            this.mouseY = ((event.clientY - rect.top) / rect.height) * 100;
+                        }
+                     }"
+                     @mouseenter="isHovering = true"
+                     @mouseleave="isHovering = false"
+                     @mousemove="handleMouseMove($event)">
                     @if($product->image)
                         <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" 
-                             class="w-full h-full object-contain rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none p-4">
+                             class="w-full h-full object-contain rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none p-4 transition-transform duration-300 ease-out"
+                             :class="{ 'scale-150': isHovering }"
+                             :style="isHovering ? `transform-origin: ${mouseX}% ${mouseY}%` : ''">
                     @else
                         <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center rounded-t-2xl lg:rounded-l-2xl lg:rounded-tr-none">
                             <div class="text-center">
