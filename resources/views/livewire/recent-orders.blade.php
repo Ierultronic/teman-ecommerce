@@ -12,14 +12,14 @@
     
     <div class="space-y-3">
         @forelse($orders as $order)
-            <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group">
+            <div class="p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors group overflow-hidden">
                 <div class="flex items-start gap-4">
                     <div class="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center flex-shrink-0">
                         <span class="text-blue-600 font-bold text-lg">{{ $loop->iteration }}</span>
                     </div>
-                    <div class="flex-1 min-w-0">
-                        <h4 class="text-sm font-semibold text-gray-900">Order #{{ $order['id'] ?? 'N/A' }}</h4>
-                        <p class="text-xs text-gray-500 mt-1 break-words">
+                    <div class="flex-1 min-w-0 overflow-hidden">
+                        <h4 class="text-sm font-semibold text-gray-900 truncate">Order #{{ $order['id'] ?? 'N/A' }}</h4>
+                        <p class="text-xs text-gray-500 mt-1 break-words overflow-hidden text-ellipsis line-clamp-2">
                             {{ $order['customer_name'] ?? 'Unknown Customer' }} • 
                             {{ isset($order['created_at']) ? \Carbon\Carbon::parse($order['created_at'])->diffForHumans() : 'Unknown date' }}
                         </p>

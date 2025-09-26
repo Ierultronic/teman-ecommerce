@@ -7,25 +7,24 @@
     </div>
     
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="text-center p-4 bg-blue-50 rounded-lg">
-            
-            <p class="text-sm text-blue-700 font-medium">Total Orders</p>
-            <p class="text-2xl font-bold text-blue-900 mt-1">{{ number_format($stats['total_orders'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-blue-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-blue-700 font-medium truncate">Total Orders</p>
+            <p class="text-2xl font-bold text-blue-900 mt-1 truncate">{{ number_format($stats['total_orders'] ?? 0) }}</p>
         </div>
         
-        <div class="text-center p-4 bg-yellow-50 rounded-lg">
-            <p class="text-sm text-yellow-700 font-medium">Pending</p>
-            <p class="text-2xl font-bold text-yellow-900 mt-1">{{ number_format($stats['pending_orders'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-yellow-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-yellow-700 font-medium truncate">Pending</p>
+            <p class="text-2xl font-bold text-yellow-900 mt-1 truncate">{{ number_format($stats['pending_orders'] ?? 0) }}</p>
         </div>
         
-        <div class="text-center p-4 bg-green-50 rounded-lg">
-            <p class="text-sm text-green-700 font-medium">Delivered</p>
-            <p class="text-2xl font-bold text-green-900 mt-1">{{ number_format($stats['delivered_orders'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-green-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-green-700 font-medium truncate">Delivered</p>
+            <p class="text-2xl font-bold text-green-900 mt-1 truncate">{{ number_format($stats['delivered_orders'] ?? 0) }}</p>
         </div>
         
-        <div class="text-center p-4 bg-red-50 rounded-lg">
-            <p class="text-sm text-red-700 font-medium">Cancelled</p>
-            <p class="text-2xl font-bold text-red-900 mt-1">{{ number_format($stats['cancelled_orders'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-red-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-red-700 font-medium truncate">Cancelled</p>
+            <p class="text-2xl font-bold text-red-900 mt-1 truncate">{{ number_format($stats['cancelled_orders'] ?? 0) }}</p>
         </div>
     </div>
     

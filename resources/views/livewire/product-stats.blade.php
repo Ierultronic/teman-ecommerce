@@ -7,24 +7,24 @@
     </div>
     
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="text-center p-4 bg-purple-50 rounded-lg">
-            <p class="text-sm text-purple-700 font-medium">Total Products</p>
-            <p class="text-2xl font-bold text-purple-900 mt-1">{{ number_format($stats['total_products'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-purple-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-purple-700 font-medium truncate">Total Products</p>
+            <p class="text-2xl font-bold text-purple-900 mt-1 truncate">{{ number_format($stats['total_products'] ?? 0) }}</p>
         </div>
         
-        <div class="text-center p-4 bg-green-50 rounded-lg">
-            <p class="text-sm text-green-700 font-medium">Active</p>
-            <p class="text-2xl font-bold text-green-900 mt-1">{{ number_format($stats['active_products'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-green-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-green-700 font-medium truncate">Active</p>
+            <p class="text-2xl font-bold text-green-900 mt-1 truncate">{{ number_format($stats['active_products'] ?? 0) }}</p>
         </div>
         
-        <div class="text-center p-4 bg-orange-50 rounded-lg">
-            <p class="text-sm text-orange-700 font-medium">Low Stock</p>
-            <p class="text-2xl font-bold text-orange-900 mt-1">{{ number_format($stats['low_stock_variants'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-orange-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-orange-700 font-medium truncate">Low Stock</p>
+            <p class="text-2xl font-bold text-orange-900 mt-1 truncate">{{ number_format($stats['low_stock_variants'] ?? 0) }}</p>
         </div>
         
-        <div class="text-center p-4 bg-red-50 rounded-lg">
-            <p class="text-sm text-red-700 font-medium">Out of Stock</p>
-            <p class="text-2xl font-bold text-red-900 mt-1">{{ number_format($stats['out_of_stock_variants'] ?? 0) }}</p>
+        <div class="text-center p-4 bg-red-50 rounded-lg overflow-hidden">
+            <p class="text-sm text-red-700 font-medium truncate">Out of Stock</p>
+            <p class="text-2xl font-bold text-red-900 mt-1 truncate">{{ number_format($stats['out_of_stock_variants'] ?? 0) }}</p>
         </div>
     </div>
     

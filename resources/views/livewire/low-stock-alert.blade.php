@@ -17,13 +17,13 @@
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             @foreach($lowStockProducts as $variant)
-                <div class="p-4 border border-red-200 rounded-lg bg-red-50 hover:bg-red-100 transition-colors group">
+                <div class="p-4 border border-red-200 rounded-lg bg-red-50 hover:bg-red-100 transition-colors group overflow-hidden">
                     <div class="space-y-3">
-                        <div>
-                            <h4 class="text-sm font-semibold text-gray-900 leading-tight break-words">
+                        <div class="min-w-0">
+                            <h4 class="text-sm font-semibold text-gray-900 leading-tight break-words overflow-hidden text-ellipsis line-clamp-2">
                                 {{ $variant['product'] ? $variant['product']['name'] : 'Unknown Product' }}
                             </h4>
-                            <p class="text-xs text-gray-600 mt-1">{{ $variant['variant_name'] ?? 'No variant name' }}</p>
+                            <p class="text-xs text-gray-600 mt-1 break-words overflow-hidden text-ellipsis line-clamp-1">{{ $variant['variant_name'] ?? 'No variant name' }}</p>
                         </div>
                         <div class="flex items-center justify-between">
                             <div class="flex items-center gap-2">

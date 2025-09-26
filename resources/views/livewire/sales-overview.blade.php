@@ -37,19 +37,19 @@
         </div>
         
         <div class="grid grid-cols-2 gap-4">
-            <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4">
+            <div class="bg-gradient-to-r from-green-50 to-green-100 rounded-lg p-4 overflow-hidden">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-green-700 font-medium">Total Revenue</p>
-                        <p class="text-xl font-bold text-green-900">${{ number_format(array_sum(array_column($chartData, 'revenue')), 2) }}</p>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm text-green-700 font-medium truncate">Total Revenue</p>
+                        <p class="text-xl font-bold text-green-900 truncate">${{ number_format(array_sum(array_column($chartData, 'revenue')), 2) }}</p>
                     </div>
                 </div>
             </div>
-            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4">
+            <div class="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-4 overflow-hidden">
                 <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-blue-700 font-medium">Total Orders</p>
-                        <p class="text-xl font-bold text-blue-900">{{ array_sum(array_column($chartData, 'orders')) }}</p>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm text-blue-700 font-medium truncate">Total Orders</p>
+                        <p class="text-xl font-bold text-blue-900 truncate">{{ array_sum(array_column($chartData, 'orders')) }}</p>
                     </div>
                 </div>
             </div>
