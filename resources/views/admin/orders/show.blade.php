@@ -62,6 +62,135 @@
     </div>
 </div>
 
+<!-- Customer Address Information -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Customer Address</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Billing address information</p>
+    </div>
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+            @if($order->customer_address_line_1)
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Address Line 1</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->customer_address_line_1 }}</dd>
+                </div>
+            @endif
+            @if($order->customer_address_line_2)
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Address Line 2</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->customer_address_line_2 }}</dd>
+                </div>
+            @endif
+            @if($order->customer_city)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">City</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->customer_city }}</dd>
+                </div>
+            @endif
+            @if($order->customer_state)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">State</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->customer_state }}</dd>
+                </div>
+            @endif
+            @if($order->customer_postal_code)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Postal Code</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->customer_postal_code }}</dd>
+                </div>
+            @endif
+            @if($order->customer_country)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Country</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->customer_country }}</dd>
+                </div>
+            @endif
+        </dl>
+    </div>
+</div>
+
+<!-- Shipping Address Information -->
+@if($order->shipping_name || $order->shipping_address_line_1)
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Shipping Address</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Delivery address information</p>
+    </div>
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2">
+            @if($order->shipping_name)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Shipping Name</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_name }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_email)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Shipping Email</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_email }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_phone)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Shipping Phone</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_phone }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_address_line_1)
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Address Line 1</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_address_line_1 }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_address_line_2)
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Address Line 2</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_address_line_2 }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_city)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">City</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_city }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_state)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">State</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_state }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_postal_code)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Postal Code</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_postal_code }}</dd>
+                </div>
+            @endif
+            @if($order->shipping_country)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Country</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ $order->shipping_country }}</dd>
+                </div>
+            @endif
+        </dl>
+    </div>
+</div>
+@endif
+
+<!-- Order Notes -->
+@if($order->order_notes)
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Order Notes</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Additional information or special instructions</p>
+    </div>
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        <div class="text-sm text-gray-900 whitespace-pre-wrap">{{ $order->order_notes }}</div>
+    </div>
+</div>
+@endif
+
 <!-- Order Items -->
 <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
     <div class="px-4 py-5 sm:px-6">

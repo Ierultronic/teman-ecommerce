@@ -21,6 +21,23 @@ class StorePage extends Component
     public $customerName = '';
     public $customerEmail = '';
     public $customerPhone = '';
+    public $customerAddressLine1 = '';
+    public $customerAddressLine2 = '';
+    public $customerCity = '';
+    public $customerState = '';
+    public $customerPostalCode = '';
+    public $customerCountry = '';
+    public $shippingName = '';
+    public $shippingEmail = '';
+    public $shippingPhone = '';
+    public $shippingAddressLine1 = '';
+    public $shippingAddressLine2 = '';
+    public $shippingCity = '';
+    public $shippingState = '';
+    public $shippingPostalCode = '';
+    public $shippingCountry = '';
+    public $orderNotes = '';
+    public $sameAsBilling = true;
     public $showOrderForm = false;
     public $selectedVariant = [];
     public $quantity = [];
@@ -195,13 +212,66 @@ class StorePage extends Component
         $this->showOrderForm = true;
     }
 
+    public function updatedSameAsBilling($value)
+    {
+        if ($value) {
+            // Copy billing information to shipping fields
+            $this->shippingName = $this->customerName;
+            $this->shippingEmail = $this->customerEmail;
+            $this->shippingPhone = $this->customerPhone;
+            $this->shippingAddressLine1 = $this->customerAddressLine1;
+            $this->shippingAddressLine2 = $this->customerAddressLine2;
+            $this->shippingCity = $this->customerCity;
+            $this->shippingState = $this->customerState;
+            $this->shippingPostalCode = $this->customerPostalCode;
+            $this->shippingCountry = $this->customerCountry;
+        } else {
+            // Clear shipping fields when unchecked
+            $this->shippingName = '';
+            $this->shippingEmail = '';
+            $this->shippingPhone = '';
+            $this->shippingAddressLine1 = '';
+            $this->shippingAddressLine2 = '';
+            $this->shippingCity = '';
+            $this->shippingState = '';
+            $this->shippingPostalCode = '';
+            $this->shippingCountry = '';
+        }
+        
+        // Force re-render to update the component
+        $this->dispatch('$refresh');
+    }
+
     public function placeOrder()
     {
-        $this->validate([
+        // Base validation rules
+        $rules = [
             'customerName' => 'required|string|max:150',
             'customerEmail' => 'required|email|max:150',
             'customerPhone' => 'nullable|string|max:30',
-        ]);
+            'customerAddressLine1' => 'required|string|max:255',
+            'customerCity' => 'required|string|max:100',
+            'customerState' => 'required|string|max:100',
+            'customerPostalCode' => 'required|string|max:20',
+            'customerCountry' => 'required|string|max:100',
+            'orderNotes' => 'nullable|string|max:1000',
+        ];
+
+        // Add shipping validation rules only if shipping is different from billing
+        if (!$this->sameAsBilling) {
+            $rules = array_merge($rules, [
+                'shippingName' => 'required|string|max:150',
+                'shippingEmail' => 'required|email|max:150',
+                'shippingPhone' => 'nullable|string|max:30',
+                'shippingAddressLine1' => 'required|string|max:255',
+                'shippingCity' => 'required|string|max:100',
+                'shippingState' => 'required|string|max:100',
+                'shippingPostalCode' => 'required|string|max:20',
+                'shippingCountry' => 'required|string|max:100',
+            ]);
+        }
+
+        $this->validate($rules);
 
         if (empty($this->cart)) {
             $this->addError('cart', 'Your cart is empty.');
@@ -217,6 +287,23 @@ class StorePage extends Component
                 'customer_name' => $this->customerName,
                 'customer_email' => $this->customerEmail,
                 'customer_phone' => $this->customerPhone,
+                'customer_address_line_1' => $this->customerAddressLine1,
+                'customer_address_line_2' => $this->customerAddressLine2,
+                'customer_city' => $this->customerCity,
+                'customer_state' => $this->customerState,
+                'customer_postal_code' => $this->customerPostalCode,
+                'customer_country' => $this->customerCountry,
+                'shipping_name' => $this->shippingName,
+                'shipping_email' => $this->shippingEmail,
+                'shipping_phone' => $this->shippingPhone,
+                'shipping_address_line_1' => $this->shippingAddressLine1,
+                'shipping_address_line_2' => $this->shippingAddressLine2,
+                'shipping_city' => $this->shippingCity,
+                'shipping_state' => $this->shippingState,
+                'shipping_postal_code' => $this->shippingPostalCode,
+                'shipping_country' => $this->shippingCountry,
+                'order_notes' => $this->orderNotes,
+                'same_as_billing' => $this->sameAsBilling,
                 'total_price' => $totalPrice,
                 'status' => 'pending',
             ]);
@@ -241,7 +328,15 @@ class StorePage extends Component
             // Clear cart and show success
             $this->cart = [];
             $this->showOrderForm = false;
-            $this->reset(['customerName', 'customerEmail', 'customerPhone']);
+            $this->reset([
+                'customerName', 'customerEmail', 'customerPhone',
+                'customerAddressLine1', 'customerAddressLine2', 'customerCity',
+                'customerState', 'customerPostalCode', 'customerCountry',
+                'shippingName', 'shippingEmail', 'shippingPhone',
+                'shippingAddressLine1', 'shippingAddressLine2', 'shippingCity',
+                'shippingState', 'shippingPostalCode', 'shippingCountry',
+                'orderNotes', 'sameAsBilling'
+            ]);
             
             $this->dispatch('order-placed', [
                 'message' => 'Your order has been placed successfully! We will process it shortly.',

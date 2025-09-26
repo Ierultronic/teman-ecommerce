@@ -47,7 +47,7 @@
                         <img src="{{ Storage::url($product->image) }}" alt="{{ $product->name }}" class="w-full h-48 object-cover">
                         <!-- Stock Status Badge -->
                         <div class="absolute top-2 right-2">
-                            @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                            @if($selectedVariant[$product->id])
                                 @php
                                     $currentStock = $this->getDisplayStock($product->id);
                                 @endphp
@@ -70,7 +70,7 @@
                         <span class="text-gray-400">No Image</span>
                         <!-- Stock Status Badge -->
                         <div class="absolute top-2 right-2">
-                            @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                            @if($selectedVariant[$product->id])
                                 @php
                                     $currentStock = $this->getDisplayStock($product->id);
                                 @endphp
@@ -100,7 +100,7 @@
                         @if($product->variants->count() > 0)
                             <div class="flex items-center space-x-2 mb-2">
                                 <span class="text-sm text-gray-600">Available Stock:</span>
-                                @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                                @if($selectedVariant[$product->id])
                                     @php
                                         $displayStock = $this->getDisplayStock($product->id);
                                     @endphp
@@ -151,25 +151,25 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Quantity:</label>
                         <div class="flex items-center space-x-2">
                             <button wire:click="decrementQuantity({{ $product->id }})" 
-                                    class="w-8 h-8 {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) <= 1) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300' }} rounded-md transition-colors flex items-center justify-center"
-                                    {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) <= 1) ? 'disabled' : '' }}>
+                                    class="w-8 h-8 {{ (!$selectedVariant[$product->id] || ($quantity[$product->id] ?? 1) <= 1) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300' }} rounded-md transition-colors flex items-center justify-center"
+                                    {{ (!$selectedVariant[$product->id] || ($quantity[$product->id] ?? 1) <= 1) ? 'disabled' : '' }}>
                                 -
                             </button>
                             <input type="number" wire:model="quantity.{{ $product->id }}" 
-                                    class="w-16 text-center border border-gray-300 rounded-md px-2 py-1 {{ ($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') ? 'bg-gray-100 cursor-not-allowed' : '' }}" 
+                                    class="w-16 text-center border border-gray-300 rounded-md px-2 py-1 {{ !$selectedVariant[$product->id] ? 'bg-gray-100 cursor-not-allowed' : '' }}" 
                                     min="1" max="{{ $this->getDisplayStock($product->id) }}" 
                                     value="{{ $quantity[$product->id] ?? 1 }}"
-                                    {{ ($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') ? 'disabled' : '' }}
+                                    {{ !$selectedVariant[$product->id] ? 'disabled' : '' }}
                                     wire:change="updateQuantity({{ $product->id }}, $event.target.value)"
                                     oninput="this.value = Math.min({{ $this->getDisplayStock($product->id) }}, Math.max(1, parseInt(this.value) || 1))">
                             <button wire:click="incrementQuantity({{ $product->id }})" 
-                                    class="w-8 h-8 {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id)) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300' }} rounded-md transition-colors flex items-center justify-center"
-                                    {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id)) ? 'disabled' : '' }}>
+                                    class="w-8 h-8 {{ (!$selectedVariant[$product->id] || ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id)) ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'bg-gray-200 text-gray-600 hover:bg-gray-300' }} rounded-md transition-colors flex items-center justify-center"
+                                    {{ (!$selectedVariant[$product->id] || ($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id)) ? 'disabled' : '' }}>
                                 +
                             </button>
                         </div>
                         <div class="text-xs text-gray-500 mt-1">
-                            @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '')
+                            @if($selectedVariant[$product->id])
                                 @if(($quantity[$product->id] ?? 1) >= $this->getDisplayStock($product->id))
                                     <span class="text-orange-600 font-medium">Maximum quantity reached</span>
                                 @else
@@ -182,7 +182,7 @@
                     </div>
                     
                     <!-- Cart Status -->
-                    @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '' && $this->getCartQuantity($product->id, $selectedVariant[$product->id]) > 0)
+                    @if($selectedVariant[$product->id] && $this->getCartQuantity($product->id, $selectedVariant[$product->id]) > 0)
                         <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
                             <div class="flex items-center justify-between">
                                 <span class="text-sm text-blue-700">
@@ -197,7 +197,7 @@
                     @endif
                     
                     <div class="flex items-center space-x-2">
-                        @if($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '' && $this->getCartQuantity($product->id, $selectedVariant[$product->id]) > 0)
+                        @if($selectedVariant[$product->id] && $this->getCartQuantity($product->id, $selectedVariant[$product->id]) > 0)
                             <button wire:click="removeFromCart('{{ $this->getCartKey($product->id, $selectedVariant[$product->id]) }}')" 
                                     class="flex-1 bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700 transition-colors">
                                 Remove from Cart
@@ -209,9 +209,9 @@
                             </button>
                         @else
                             <button wire:click="addToCart({{ $product->id }}, {{ $selectedVariant[$product->id] ?? 'null' }}, {{ $quantity[$product->id] ?? 1 }})" 
-                                    class="flex-1 {{ (($selectedVariant[$product->id] !== null && $selectedVariant[$product->id] !== '') && $this->getDisplayStock($product->id) > 0) ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-400 cursor-not-allowed' }} text-white px-4 py-2 rounded-md transition-colors"
-                                    {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '') || $this->getDisplayStock($product->id) <= 0) ? 'disabled' : '' }}>
-                                {{ (($selectedVariant[$product->id] === null || $selectedVariant[$product->id] === '')) ? 'Select Variant' : ($this->getDisplayStock($product->id) > 0 ? 'Add to Cart' : 'Out of Stock') }}
+                                    class="flex-1 {{ ($selectedVariant[$product->id] && $this->getDisplayStock($product->id) > 0) ? 'bg-orange-600 hover:bg-orange-700' : 'bg-gray-400 cursor-not-allowed' }} text-white px-4 py-2 rounded-md transition-colors"
+                                    {{ (!$selectedVariant[$product->id] || $this->getDisplayStock($product->id) <= 0) ? 'disabled' : '' }}>
+                                {{ !$selectedVariant[$product->id] ? 'Select Variant' : ($this->getDisplayStock($product->id) > 0 ? 'Add to Cart' : 'Out of Stock') }}
                             </button>
                         @endif
                     </div>
@@ -243,76 +243,12 @@
 
 
     <!-- Order Form Modal -->
-    @if($showOrderForm)
-        
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
-            <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-2xl">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Complete Your Order</h3>
-                
-                <!-- Cart Summary -->
-                <div class="mb-4 p-4 bg-gray-50 rounded-md">
-                    <h4 class="font-medium text-gray-900 mb-2">Order Summary:</h4>
-                    @foreach($cart as $item)
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>{{ $item['product_name'] }} ({{ $item['variant_name'] }}) x {{ $item['quantity'] }}</span>
-                            <span>RM{{ number_format($item['price'] * $item['quantity'], 2) }}</span>
-                        </div>
-                    @endforeach
-                    <div class="border-t pt-2 mt-2">
-                        <div class="flex justify-between font-semibold">
-                            <span>Total:</span>
-                            <span>RM{{ number_format($this->getCartTotal(), 2) }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Customer Details Form -->
-                <form wire:submit.prevent="placeOrder">
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Full Name *</label>
-                            <input type="text" wire:model="customerName" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
-                            @error('customerName') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-                            <input type="email" wire:model="customerEmail" class="w-full border border-gray-300 rounded-md px-3 py-2" required>
-                            @error('customerEmail') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                            <input type="tel" wire:model="customerPhone" class="w-full border border-gray-300 rounded-md px-3 py-2">
-                            @error('customerPhone') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
-                        </div>
-                    </div>
-
-                    @error('order') <div class="text-red-500 text-sm mt-2">{{ $message }}</div> @enderror
-
-                    <div class="flex space-x-3 mt-6">
-                        <button type="button" wire:click="$set('showOrderForm', false)" 
-                                class="flex-1 bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors">
-                            Cancel
-                        </button>
-                        <button type="submit" 
-                                wire:loading.attr="disabled"
-                                wire:loading.class="opacity-50 cursor-not-allowed"
-                                class="flex-1 bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 transition-colors">
-                            <span wire:loading.remove>Place Order</span>
-                            <span wire:loading class="flex items-center justify-center">
-                                <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                </svg>
-                                Processing...
-                            </span>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    @endif
+    <x-order-modal 
+        :show="$showOrderForm" 
+        :cart="$cart" 
+        :cartTotal="$this->getCartTotal()"
+        wire:key="order-modal-{{ $showOrderForm ? 'open' : 'closed' }}"
+    />
 
     <!-- Bottom Toast Notification -->
     <div x-data="{ show: false, message: '', orderId: '' }" 

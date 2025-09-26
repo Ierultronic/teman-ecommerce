@@ -14,12 +14,30 @@ class Order extends Model
         'customer_name',
         'customer_email',
         'customer_phone',
+        'customer_address_line_1',
+        'customer_address_line_2',
+        'customer_city',
+        'customer_state',
+        'customer_postal_code',
+        'customer_country',
+        'shipping_name',
+        'shipping_email',
+        'shipping_phone',
+        'shipping_address_line_1',
+        'shipping_address_line_2',
+        'shipping_city',
+        'shipping_state',
+        'shipping_postal_code',
+        'shipping_country',
+        'order_notes',
+        'same_as_billing',
         'total_price',
         'status'
     ];
 
     protected $casts = [
         'total_price' => 'decimal:2',
+        'same_as_billing' => 'boolean',
     ];
 
     public function orderItems(): HasMany
