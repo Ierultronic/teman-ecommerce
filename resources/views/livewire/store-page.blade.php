@@ -217,7 +217,7 @@
                         
                         <!-- Price -->
                         <div class="mb-4">
-                            <div class="text-2xl font-bold text-green-600">RM{{ number_format($product->price, 2) }}</div>
+                            <div class="text-2xl font-bold text-orange-600">RM{{ number_format($product->price, 2) }}</div>
                             @if($product->variants->count() > 0)
                                 <div class="text-xs text-gray-500 mt-1">
                                     {{ $product->variants->count() }} variant{{ $product->variants->count() > 1 ? 's' : '' }} available

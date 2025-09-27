@@ -61,7 +61,7 @@
                                     <p class="text-xs text-gray-500">{{ $item['variant_name'] }}</p>
                                 @endif
                                 <div class="flex items-center justify-between mt-2">
-                                    <span class="text-sm font-semibold text-green-600">RM{{ number_format($item['price'], 2) }}</span>
+                                    <span class="text-sm font-semibold text-orange-600">RM{{ number_format($item['price'], 2) }}</span>
                                     <div class="flex items-center space-x-2">
                                         <span class="text-sm text-gray-600">Qty: {{ $item['quantity'] }}</span>
                                         <button wire:click="removeFromCart('{{ $key }}')" 
@@ -92,7 +92,7 @@
             <div class="border-t border-gray-200 p-6">
                 <div class="flex items-center justify-between mb-4">
                     <span class="text-lg font-semibold text-gray-900">Total</span>
-                    <span class="text-2xl font-bold text-green-600">RM{{ number_format($cartTotal, 2) }}</span>
+                    <span class="text-2xl font-bold text-orange-600">RM{{ number_format($cartTotal, 2) }}</span>
                 </div>
                 <button @click="show = false; $wire.closeCartSidebar(); $wire.$set('showOrderForm', true)" 
                         class="w-full bg-orange-600 text-white py-3 px-4 rounded-xl hover:bg-orange-700 transition-colors font-semibold">
