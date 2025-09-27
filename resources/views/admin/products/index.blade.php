@@ -206,10 +206,12 @@
                                 </form>
                             </div>
                             @else
-                            <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this product? This action cannot be undone.')">
+                            <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                <button type="submit" 
+                                        class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                        onclick="event.preventDefault(); confirmDelete('Are you sure you want to delete this product?', () => this.closest('form').submit(), 'This action cannot be undone and will permanently remove the product from your store.');">
                                     <i data-feather="trash-2" class="w-3 h-3 mr-1"></i>
                                     Delete
                                 </button>
@@ -357,10 +359,12 @@
                                     </form>
                                 </div>
                                 @else
-                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to delete this product? This action cannot be undone.')">
+                                <form action="{{ route('admin.products.destroy', $product) }}" method="POST" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors">
+                                    <button type="submit" 
+                                            class="inline-flex items-center px-3 py-1.5 border border-red-300 shadow-sm text-xs font-medium rounded text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                                            onclick="event.preventDefault(); confirmDelete('Are you sure you want to delete this product?', () => this.closest('form').submit(), 'This action cannot be undone and will permanently remove the product from your store.');">
                                         <i data-feather="trash-2" class="w-3 h-3 mr-1"></i>
                                         Delete
                                     </button>

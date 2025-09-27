@@ -309,7 +309,7 @@
                 <input type="hidden" name="verified" value="1">
                 <button type="submit" 
                         class="text-white px-4 py-2 rounded-md bg-green-600 hover:bg-green-700 transition-colors"
-                        onclick="return confirm('Are you sure you want to verify this payment?')">
+                        onclick="event.preventDefault(); confirmAction('Verify Payment', 'Are you sure you want to verify this payment?', () => this.closest('form').submit(), 'success');">
                     <i data-feather="check" class="w-4 h-4 mr-2 inline"></i>
                     Verify Payment
                 </button>
@@ -320,7 +320,7 @@
                 <input type="hidden" name="verified" value="0">
                 <button type="submit" 
                         class="text-white px-4 py-2 rounded-md bg-red-600 hover:bg-red-700 transition-colors"
-                        onclick="return confirm('Are you sure you want to reject this payment? This will cancel the order.')">
+                        onclick="event.preventDefault(); confirmAction('Reject Payment', 'Are you sure you want to reject this payment?', () => this.closest('form').submit(), 'danger', 'This will cancel the order and notify the customer.');">
                     <i data-feather="x" class="w-4 h-4 mr-2 inline"></i>
                     Reject Payment
                 </button>

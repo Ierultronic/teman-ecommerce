@@ -6,6 +6,7 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <title>Teman - Payment</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @livewireStyles
 </head>
 <body class="bg-gray-50">
@@ -31,6 +32,9 @@
             {{ $slot }}
         </main>
     </div>
+
+    <!-- Confirmation Modal Component -->
+    <x-confirmation-modal />
 
     @livewireScripts
 </body>

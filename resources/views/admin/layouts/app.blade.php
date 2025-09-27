@@ -7,6 +7,7 @@
     <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @livewireStyles
     <script>
         tailwind.config = {
@@ -163,6 +164,9 @@
 
     <!-- Mobile Overlay -->
     <div id="sidebarOverlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden hidden"></div>
+
+    <!-- Confirmation Modal Component -->
+    <x-confirmation-modal />
 
     <script>
         // Initialize Feather icons

@@ -56,15 +56,21 @@
                     <div class="text-center">
                         <h3 class="text-xl font-semibold text-gray-900 mb-4">Scan QR Code to Pay</h3>
                         
-                        <!-- QR Code Placeholder -->
+                        <!-- QR Code -->
                         <div class="bg-white border-2 border-gray-200 rounded-lg p-8 mb-4 inline-block">
-                            <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <div class="text-center">
-                                    <svg class="h-16 w-16 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
-                                    </svg>
-                                    <p class="text-sm text-gray-500">QR Code</p>
-                                </div>
+                            <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
+                                @if(file_exists(public_path('images/qr.jpeg')))
+                                    <img src="{{ asset('images/qr.jpeg') }}" 
+                                         alt="QR Code" 
+                                         class="w-full h-full object-contain rounded-lg">
+                                @else
+                                    <div class="text-center">
+                                        <svg class="h-16 w-16 text-gray-400 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z" />
+                                        </svg>
+                                        <p class="text-sm text-gray-500">QR Code</p>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                         
@@ -97,13 +103,21 @@
                                     Payment Reference Number *
                                 </label>
                                 <input type="text" 
-                                       wire:model="paymentReference" 
+                                       wire:model.live="paymentReference" 
+                                       value="{{ $paymentReference }}"
                                        class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500" 
                                        placeholder="Enter reference number from your bank receipt"
                                        required>
                                 @error('paymentReference') 
                                     <span class="text-red-500 text-sm">{{ $message }}</span> 
                                 @enderror
+                                
+                                <!-- Debug info -->
+                                @if($extractedReference)
+                                    <div class="mt-1 text-xs text-gray-500">
+                                        Debug: paymentReference = "{{ $paymentReference }}", extractedReference = "{{ $extractedReference }}"
+                                    </div>
+                                @endif
                             </div>
 
                             <!-- Receipt Upload -->

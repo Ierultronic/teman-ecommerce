@@ -138,6 +138,6 @@ class QrPaymentPage extends Component
         
         return view('livewire.qr-payment-page', [
             'qrData' => $qrData
-        ])->layout('components.layouts.app');
+        ]);
     }
 }
