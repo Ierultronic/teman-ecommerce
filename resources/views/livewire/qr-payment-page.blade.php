@@ -111,13 +111,6 @@
                                 @error('paymentReference') 
                                     <span class="text-red-500 text-sm">{{ $message }}</span> 
                                 @enderror
-                                
-                                <!-- Debug info -->
-                                @if($extractedReference)
-                                    <div class="mt-1 text-xs text-gray-500">
-                                        Debug: paymentReference = "{{ $paymentReference }}", extractedReference = "{{ $extractedReference }}"
-                                    </div>
-                                @endif
                             </div>
 
                             <!-- Receipt Upload -->

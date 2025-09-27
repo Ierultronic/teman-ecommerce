@@ -74,7 +74,12 @@
                         <!-- Variant Selection -->
                         @if($product->variants->count() > 0)
                             <div>
-                                <label class="block text-lg font-semibold text-gray-900 mb-3">Select Variant</label>
+                                <label class="block text-lg font-semibold text-gray-900 mb-3">
+                                    Select Variant
+                                    @if($product->variants->count() === 1)
+                                        <span class="text-sm font-normal text-gray-500">(Auto-selected)</span>
+                                    @endif
+                                </label>
                                 <div class="grid grid-cols-1 gap-3">
                                     @foreach($product->variants as $variant)
                                         <label class="relative {{ $variant->stock <= 0 ? 'cursor-not-allowed' : 'cursor-pointer' }}">
@@ -84,7 +89,7 @@
                                                    value="{{ $variant->id }}"
                                                    class="sr-only peer"
                                                    {{ $variant->stock <= 0 ? 'disabled' : '' }}>
-                                            <div class="flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl peer-checked:border-orange-500 peer-checked:bg-orange-50 hover:border-gray-300 transition-colors {{ $variant->stock <= 0 ? 'opacity-50 bg-gray-50' : '' }}">
+                                            <div class="flex items-center justify-between p-4 border-2 border-gray-200 rounded-xl peer-checked:border-orange-500 peer-checked:bg-orange-50 hover:border-gray-300 transition-all duration-200 {{ $variant->stock <= 0 ? 'opacity-50 bg-gray-50' : 'hover:shadow-md' }} {{ $selectedVariant[$product->id] == $variant->id ? 'ring-2 ring-orange-200' : '' }}">
                                                 <div class="flex-1">
                                                     <div class="font-medium {{ $variant->stock <= 0 ? 'text-gray-500' : 'text-gray-900' }}">{{ $variant->variant_name }}</div>
                                                     <div class="text-sm {{ $variant->stock <= 0 ? 'text-gray-400' : 'text-gray-600' }}">
@@ -99,6 +104,13 @@
                                                     <div class="text-sm font-medium {{ $variant->stock <= 0 ? 'text-gray-400' : 'text-gray-600' }}">
                                                         {{ $variant->stock > 0 ? $variant->stock . ' available' : 'Unavailable' }}
                                                     </div>
+                                                    @if($selectedVariant[$product->id] == $variant->id)
+                                                        <div class="mt-1">
+                                                            <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                                                            </svg>
+                                                        </div>
+                                                    @endif
                                                 </div>
                                             </div>
                                         </label>
@@ -163,14 +175,14 @@
                         <div class="flex space-x-3 pt-4">
                             @if($currentVariantId && $this->getCartQuantity($product->id, $currentVariantId) > 0)
                                 <button wire:click="removeFromCart('{{ $this->getCartKey($product->id, $currentVariantId) }}')" 
-                                        class="flex items-center justify-center space-x-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg hover:bg-red-100 transition-colors border border-red-200 hover:border-red-300 group">
+                                        class="flex items-center justify-center space-x-2 bg-red-50 text-red-600 px-4 py-3 rounded-lg hover:bg-red-100 transition-all duration-200 border border-red-200 hover:border-red-300 group transform hover:scale-105 active:scale-95">
                                     <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
                                     <span class="font-medium text-sm">Remove</span>
                                 </button>
                                 <button wire:click="updateCart({{ $product->id }}, {{ $currentVariantId }}, {{ $quantity[$product->id] ?? 1 }})" 
-                                        class="flex-1 flex items-center justify-center space-x-2 {{ $currentStock > 0 ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }} px-4 py-3 rounded-lg transition-colors group"
+                                        class="flex-1 flex items-center justify-center space-x-2 {{ $currentStock > 0 ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }} px-4 py-3 rounded-lg transition-all duration-200 group transform hover:scale-105 active:scale-95"
                                         {{ $currentStock <= 0 ? 'disabled' : '' }}>
                                     <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -179,7 +191,7 @@
                                 </button>
                             @else
                                 <button wire:click="addToCart({{ $product->id }}, {{ $currentVariantId ?? 'null' }}, {{ $quantity[$product->id] ?? 1 }})" 
-                                        class="flex-1 flex items-center justify-center space-x-2 {{ ($currentVariantId && $currentStock > 0) ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }} px-4 py-3 rounded-lg transition-colors group"
+                                        class="flex-1 flex items-center justify-center space-x-2 {{ ($currentVariantId && $currentStock > 0) ? 'bg-orange-600 hover:bg-orange-700 text-white' : 'bg-gray-100 text-gray-400 cursor-not-allowed' }} px-4 py-3 rounded-lg transition-all duration-200 group transform hover:scale-105 active:scale-95"
                                         {{ (!$currentVariantId || $currentStock <= 0) ? 'disabled' : '' }}>
                                     <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z" />

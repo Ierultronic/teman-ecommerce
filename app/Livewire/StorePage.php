@@ -41,9 +41,14 @@ class StorePage extends Component
     public $showOrderForm = false;
     public $paymentMethod = '';
     public $showProductModal = false;
+    public $showCartSidebar = false;
     public $selectedProduct = null;
     public $selectedVariant = [];
     public $quantity = [];
+    
+    // Reactive properties for Alpine.js
+    public $cartCount = 0;
+    public $cartTotal = 0;
     
     // Computed properties for current product modal
     public $currentVariantId = null;
@@ -62,6 +67,12 @@ class StorePage extends Component
             // Initialize selectedVariant as null for each product
             $this->selectedVariant[$product->id] = null;
         }
+        
+        // Load cart from localStorage if available
+        $this->dispatch('load-cart-from-storage');
+        
+        // Initialize cart properties
+        $this->updateCartProperties();
     }
 
     public function getCartQuantity($productId, $variantId = null)
@@ -97,42 +108,93 @@ class StorePage extends Component
 
     public function addToCart($productId, $variantId = null, $quantity = 1)
     {
-        // Prevent adding base product (no variant selected)
-        if (!$variantId) {
-            $this->addError('variant', 'Please select a variant before adding to cart.');
-            return;
-        }
+        try {
+            // Prevent adding base product (no variant selected)
+            if (!$variantId) {
+                $this->addError('variant', 'Please select a variant before adding to cart.');
+                $this->dispatch('cart-error', ['message' => 'Please select a variant before adding to cart.']);
+                return;
+            }
 
-        $product = Product::find($productId);
-        $variant = $variantId ? $product->variants()->find($variantId) : null;
-        
-        // Additional validation to ensure variant exists and has stock
-        if (!$variant || $variant->stock <= 0) {
-            $this->addError('variant', 'Selected variant is not available or out of stock.');
-            return;
-        }
-        
-        $cartKey = $productId . '_' . $variantId;
-        
-        // Use variant price if available, otherwise use product price
-        $price = $variant->price ?? $product->price;
-        
-        if (isset($this->cart[$cartKey])) {
-            // If item already exists, update the quantity instead of adding
-            $this->cart[$cartKey]['quantity'] = $quantity;
-        } else {
-            // Add new item to cart
-            $this->cart[$cartKey] = [
-                'product_id' => $productId,
-                'variant_id' => $variantId,
-                'quantity' => $quantity,
-                'product_name' => $product->name,
-                'variant_name' => $variant->variant_name,
-                'price' => $price,
-            ];
-        }
+            $product = Product::find($productId);
+            if (!$product) {
+                $this->addError('product', 'Product not found.');
+                $this->dispatch('cart-error', ['message' => 'Product not found.']);
+                return;
+            }
 
-        $this->dispatch('cart-updated');
+            $variant = $variantId ? $product->variants()->find($variantId) : null;
+            
+            // Additional validation to ensure variant exists and has stock
+            if (!$variant) {
+                $this->addError('variant', 'Selected variant not found.');
+                $this->dispatch('cart-error', ['message' => 'Selected variant not found.']);
+                return;
+            }
+
+            if ($variant->stock <= 0) {
+                $this->addError('variant', 'Selected variant is out of stock.');
+                $this->dispatch('cart-error', ['message' => 'Selected variant is out of stock.']);
+                return;
+            }
+
+            // Validate quantity
+            $quantity = max(1, (int) $quantity);
+            if ($quantity > $variant->stock) {
+                $this->addError('quantity', 'Quantity exceeds available stock.');
+                $this->dispatch('cart-error', ['message' => 'Quantity exceeds available stock.']);
+                return;
+            }
+            
+            $cartKey = $productId . '_' . $variantId;
+            
+            // Use variant price if available, otherwise use product price
+            $price = $variant->price ?? $product->price;
+            
+            $isNewItem = !isset($this->cart[$cartKey]);
+            
+            if (isset($this->cart[$cartKey])) {
+                // If item already exists, update the quantity instead of adding
+                $this->cart[$cartKey]['quantity'] = $quantity;
+            } else {
+                // Add new item to cart
+                $this->cart[$cartKey] = [
+                    'product_id' => $productId,
+                    'variant_id' => $variantId,
+                    'quantity' => $quantity,
+                    'product_name' => $product->name,
+                    'variant_name' => $variant->variant_name,
+                    'price' => $price,
+                    'product_image' => $product->image,
+                ];
+            }
+
+            // Clear any previous errors
+            $this->resetErrorBag(['variant', 'product', 'quantity']);
+
+               // Update reactive properties
+               $this->updateCartProperties();
+               
+               // Dispatch events for UI feedback
+               $this->dispatch('cart-updated');
+               $this->dispatch('item-added-to-cart', [
+                   'productId' => $productId,
+                   'variantId' => $variantId,
+                   'productName' => $product->name,
+                   'variantName' => $variant->variant_name,
+                   'quantity' => $quantity,
+                   'isNewItem' => $isNewItem
+               ]);
+            
+            
+            // Persist cart to localStorage
+            $this->dispatch('persist-cart', ['cart' => $this->cart]);
+
+        } catch (\Exception $e) {
+            $this->addError('cart', 'An error occurred while adding item to cart.');
+            $this->dispatch('cart-error', ['message' => 'An error occurred while adding item to cart.']);
+            Log::error('Add to cart error: ' . $e->getMessage());
+        }
     }
 
     public function updateCart($productId, $variantId = null, $quantity = 1)
@@ -148,14 +210,28 @@ class StorePage extends Component
         if (isset($this->cart[$cartKey])) {
             // Update existing cart item quantity
             $this->cart[$cartKey]['quantity'] = $quantity;
+            $this->updateCartProperties();
             $this->dispatch('cart-updated');
         }
     }
 
     public function removeFromCart($key)
     {
+        $removedItem = $this->cart[$key] ?? null;
         unset($this->cart[$key]);
+        
+        // Update reactive properties
+        $this->updateCartProperties();
+        
+        // Dispatch events for UI feedback
         $this->dispatch('cart-updated');
+        $this->dispatch('item-removed-from-cart', [
+            'key' => $key,
+            'item' => $removedItem
+        ]);
+        
+        // Persist cart to localStorage
+        $this->dispatch('persist-cart', ['cart' => $this->cart]);
     }
 
     public function updateQuantity($productId, $quantity)
@@ -211,6 +287,14 @@ class StorePage extends Component
         return collect($this->cart)->sum('quantity');
     }
 
+    public function updateCartProperties()
+    {
+        $this->cartCount = collect($this->cart)->sum('quantity');
+        $this->cartTotal = collect($this->cart)->sum(function($item) {
+            return $item['price'] * $item['quantity'];
+        });
+    }
+
     public function showOrderForm()
     {
         if (empty($this->cart)) {
@@ -230,6 +314,15 @@ class StorePage extends Component
             if (!isset($this->quantity[$productId])) {
                 $this->quantity[$productId] = 1;
             }
+            
+            // Auto-select variant if only one available and in stock
+            if ($this->selectedProduct->variants->count() === 1) {
+                $variant = $this->selectedProduct->variants->first();
+                if ($variant->stock > 0) {
+                    $this->selectedVariant[$productId] = $variant->id;
+                }
+            }
+            
             // Update current variant properties
             $this->updateCurrentVariantProperties();
         }
@@ -242,6 +335,16 @@ class StorePage extends Component
         $this->currentVariantId = null;
         $this->currentVariant = null;
         $this->currentStock = 0;
+    }
+
+    public function toggleCartSidebar()
+    {
+        $this->showCartSidebar = !$this->showCartSidebar;
+    }
+
+    public function closeCartSidebar()
+    {
+        $this->showCartSidebar = false;
     }
 
     public function updateCurrentVariantProperties()
@@ -396,6 +499,7 @@ class StorePage extends Component
             // Clear cart and show success
             $this->cart = [];
             $this->showOrderForm = false;
+            $this->clearCartFromStorage(); // Clear from localStorage too
             $this->reset([
                 'customerName', 'customerEmail', 'customerPhone',
                 'customerAddressLine1', 'customerAddressLine2', 'customerCity',
@@ -533,6 +637,52 @@ class StorePage extends Component
             } elseif ($availableStock <= 0) {
                 $this->quantity[$productId] = 0;
             }
+        }
+    }
+
+    public function loadCartFromStorage($cartData)
+    {
+        if (is_array($cartData) && !empty($cartData)) {
+            $this->cart = $cartData;
+            $this->updateCartProperties();
+            $this->dispatch('cart-updated');
+        }
+    }
+
+    public function clearCartFromStorage()
+    {
+        $this->dispatch('clear-cart-storage');
+    }
+
+    public function quickAddToCart($productId)
+    {
+        try {
+            $product = $this->products->find($productId);
+            if (!$product) {
+                $this->dispatch('cart-error', ['message' => 'Product not found.']);
+                return;
+            }
+
+            if ($product->variants->count() !== 1) {
+                $this->dispatch('cart-error', ['message' => 'Product has multiple variants. Please select one.']);
+                return;
+            }
+            
+            $variant = $product->variants->first();
+            if (!$variant) {
+                $this->dispatch('cart-error', ['message' => 'Variant not found.']);
+                return;
+            }
+
+            if ($variant->stock <= 0) {
+                $this->dispatch('cart-error', ['message' => 'Product is out of stock.']);
+                return;
+            }
+
+            $this->addToCart($productId, $variant->id, 1);
+        } catch (\Exception $e) {
+            $this->dispatch('cart-error', ['message' => 'An error occurred while adding item to cart.']);
+            Log::error('Quick add to cart error: ' . $e->getMessage());
         }
     }
 

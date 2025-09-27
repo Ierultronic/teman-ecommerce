@@ -1,5 +1,135 @@
-<div class="min-h-screen bg-gray-50">
-    
+<div class="min-h-screen bg-gray-50" 
+     x-data="{
+         cartCount: 0,
+         cartTotal: 0,
+         toastMessage: '',
+         showToast: false,
+         animateCartIcon: false,
+         init() {
+            // Initialize cart values from reactive properties
+            this.cartCount = this.$wire.cartCount || 0;
+            this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
+            
+            // Debug logging
+            console.log('Alpine init - cartCount:', this.cartCount, 'cartTotal:', this.cartTotal);
+            
+            // Listen for cart updates
+            this.$wire.on('cart-updated', () => {
+                this.cartCount = this.$wire.cartCount;
+                this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
+                console.log('Cart updated - cartCount:', this.cartCount, 'cartTotal:', this.cartTotal);
+            });
+             
+             // Listen for item added to cart
+             this.$wire.on('item-added-to-cart', (event) => {
+                 const productName = event.productName || 'Product';
+                 const quantity = event.quantity || 1;
+                 this.showToastMessage(`Added ${quantity}x ${productName} to cart!`);
+                 this.animateCartIcon = true;
+                 setTimeout(() => this.animateCartIcon = false, 1000);
+             });
+             
+             // Listen for item removed from cart
+             this.$wire.on('item-removed-from-cart', (event) => {
+                 const productName = event.item?.product_name || 'Item';
+                 this.showToastMessage(`Removed ${productName} from cart`);
+             });
+             
+             // Listen for cart errors
+             this.$wire.on('cart-error', (event) => {
+                 this.showErrorToast(event.message);
+             });
+             
+             // Load cart from localStorage
+             this.$wire.on('load-cart-from-storage', () => {
+                 const savedCart = localStorage.getItem('teman_cart');
+                 if (savedCart) {
+                     try {
+                         const cartData = JSON.parse(savedCart);
+                         this.$wire.loadCartFromStorage(cartData);
+                     } catch (e) {
+                         console.error('Failed to load cart from storage:', e);
+                     }
+                 }
+             });
+             
+             // Persist cart to localStorage
+             this.$wire.on('persist-cart', (event) => {
+                 localStorage.setItem('teman_cart', JSON.stringify(event.cart));
+             });
+             
+             // Clear cart from localStorage
+             this.$wire.on('clear-cart-storage', () => {
+                 localStorage.removeItem('teman_cart');
+             });
+             
+            // Initialize cart count from reactive properties
+            this.cartCount = this.$wire.cartCount || 0;
+            this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
+         },
+         showToastMessage(message) {
+             this.toastMessage = message;
+             this.showToast = true;
+             setTimeout(() => this.showToast = false, 3000);
+         },
+         showErrorToast(message) {
+             this.toastMessage = message;
+             this.showToast = true;
+             setTimeout(() => this.showToast = false, 4000);
+         }
+     }">
+
+    <!-- Floating Cart Button - Bottom Right -->
+    <div class="fixed bottom-6 right-6 z-50">
+        <button wire:click="toggleCartSidebar" 
+                class="relative bg-orange-600 hover:bg-orange-700 text-white px-6 py-4 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-center space-x-3"
+                :class="{ 'animate-pulse': animateCartIcon }">
+            
+            <!-- Shopping Cart Icon -->
+            <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z"/>
+            </svg>
+            
+            <!-- Cart Info -->
+            <div class="flex flex-col items-start">
+                <span class="text-sm font-medium">Cart</span>
+                <span class="text-xs opacity-90" x-text="(cartCount || 0) + ' item' + ((cartCount || 0) !== 1 ? 's' : '')"></span>
+            </div>
+            
+            <!-- Total Price -->
+            <div class="text-right">
+                <div class="text-lg font-bold" x-text="'RM' + (parseFloat(cartTotal || 0)).toFixed(2)"></div>
+            </div>
+            
+            <!-- Cart Count Badge -->
+            <div x-show="(cartCount || 0) > 0" 
+                 x-transition:enter="transition ease-out duration-200"
+                 x-transition:enter-start="opacity-0 scale-0"
+                 x-transition:enter-end="opacity-100 scale-100"
+                 x-transition:leave="transition ease-in duration-150"
+                 x-transition:leave-start="opacity-100 scale-100"
+                 x-transition:leave-end="opacity-0 scale-0"
+                 class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full h-6 w-6 flex items-center justify-center shadow-lg"
+                 x-text="cartCount || 0"></div>
+        </button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div x-show="showToast" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform translate-y-2"
+         x-transition:enter-end="opacity-100 transform translate-y-0"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 transform translate-y-0"
+         x-transition:leave-end="opacity-0 transform translate-y-2"
+         class="fixed top-4 right-4 z-50 px-6 py-3 rounded-lg shadow-lg flex items-center space-x-2"
+         :class="toastMessage.includes('error') || toastMessage.includes('Error') || toastMessage.includes('not found') || toastMessage.includes('out of stock') || toastMessage.includes('exceeds') ? 'bg-red-500 text-white' : 'bg-green-500 text-white'">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path x-show="!(toastMessage.includes('error') || toastMessage.includes('Error') || toastMessage.includes('not found') || toastMessage.includes('out of stock') || toastMessage.includes('exceeds'))" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            <path x-show="toastMessage.includes('error') || toastMessage.includes('Error') || toastMessage.includes('not found') || toastMessage.includes('out of stock') || toastMessage.includes('exceeds')" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+        <span x-text="toastMessage"></span>
+    </div>
 
     <!-- Success Message -->
     <div x-data="{ show: false, message: '', orderId: '' }" 
@@ -44,7 +174,7 @@
 
     <!-- Products Grid -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             @forelse($products as $product)
                 <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
                      wire:click="openProductModal({{ $product->id }})">
@@ -108,12 +238,32 @@
 
                         <!-- Quick Add Button (if only one variant) -->
                         @if($product->variants->count() == 1 && $product->variants->first()->stock > 0)
-                            <button class="w-full mt-4 bg-orange-600 text-white py-2 px-4 rounded-xl hover:bg-orange-700 transition-colors font-medium"
-                                    wire:click.stop="addToCart({{ $product->id }}, {{ $product->variants->first()->id }}, 1)">
-                                Quick Add
+                            <button class="w-full mt-4 bg-orange-600 text-white py-3 px-4 rounded-xl hover:bg-orange-700 transition-all duration-200 font-medium transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-xl touch-manipulation"
+                                    wire:click.stop="quickAddToCart({{ $product->id }})"
+                                    x-data="{ 
+                                        isAdding: false,
+                                        handleClick() {
+                                            this.isAdding = true;
+                                            setTimeout(() => this.isAdding = false, 1000);
+                                        }
+                                    }"
+                                    @click="handleClick()">
+                                <span x-show="!isAdding" class="flex items-center justify-center space-x-2">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l-1 7a2 2 0 01-2 2H8a2 2 0 01-2-2L5 9z" />
+                                    </svg>
+                                    <span>Quick Add</span>
+                                </span>
+                                <span x-show="isAdding" class="flex items-center justify-center space-x-2">
+                                    <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span>Adding...</span>
+                                </span>
                             </button>
                         @else
-                            <button class="w-full mt-4 bg-gray-100 text-gray-700 py-2 px-4 rounded-xl hover:bg-gray-200 transition-colors font-medium"
+                            <button class="w-full mt-4 bg-gray-100 text-gray-700 py-3 px-4 rounded-xl hover:bg-gray-200 transition-colors font-medium touch-manipulation"
                                     wire:click.stop="openProductModal({{ $product->id }})">
                                 View Details
                             </button>
@@ -132,29 +282,14 @@
         </div>
     </div>
 
-    <!-- Shopping Cart -->
-    @if(count($cart) > 0)
-        <div class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-xl p-4 z-40">
-            <div class="max-w-7xl mx-auto flex items-center justify-between">
-                <div class="flex items-center space-x-6">
-                    <div class="flex items-center space-x-2">
-                        <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l2.5 5m6-5v6a2 2 0 01-2 2H9a2 2 0 01-2-2v-6m8 0V9a2 2 0 00-2-2H9a2 2 0 00-2 2v4.01" />
-                        </svg>
-                        <span class="text-sm text-gray-600">Items in cart: <span class="font-semibold text-orange-600">{{ $this->getCartCount() }}</span></span>
-                    </div>
-                    <div class="text-right">
-                        <div class="text-sm text-gray-600">Total</div>
-                        <div class="text-2xl font-bold text-green-600">RM{{ number_format($this->getCartTotal(), 2) }}</div>
-                    </div>
-                </div>
-                <button wire:click="$set('showOrderForm', true)" 
-                        class="bg-orange-600 text-white px-8 py-3 rounded-xl hover:bg-orange-700 transition-colors font-semibold shadow-lg hover:shadow-xl">
-                    Proceed to Checkout
-                </button>
-            </div>
-        </div>
-    @endif
+    <!-- Cart Sidebar -->
+    <x-cart-sidebar 
+        :show="$showCartSidebar" 
+        :cart="$cart" 
+        :cartTotal="$cartTotal"
+        :cartCount="$cartCount"
+        wire:key="cart-sidebar-{{ $showCartSidebar ? 'open' : 'closed' }}"
+    />
 
     <!-- Product Detail Modal -->
     <x-product-modal 
@@ -172,7 +307,7 @@
     <x-order-modal 
         :show="$showOrderForm" 
         :cart="$cart" 
-        :cartTotal="$this->getCartTotal()"
+        :cartTotal="$cartTotal"
         wire:key="order-modal-{{ $showOrderForm ? 'open' : 'closed' }}"
     />
 
