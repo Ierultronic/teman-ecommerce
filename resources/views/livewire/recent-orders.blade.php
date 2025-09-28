@@ -25,7 +25,7 @@
                         </p>
                     </div>
                     <div class="text-right flex-shrink-0">
-                        <p class="text-sm font-bold text-gray-900">${{ number_format($order['total_price'] ?? 0, 2) }}</p>
+                        <p class="text-sm font-bold text-gray-900">RM{{ number_format($order['total_price'] ?? 0, 2) }}</p>
                         <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium mt-1
                             @if(($order['status'] ?? '') === 'pending') bg-yellow-100 text-yellow-800
                             @elseif(($order['status'] ?? '') === 'processing') bg-blue-100 text-blue-800
