@@ -21,7 +21,7 @@
                         <h1 class="text-3xl font-bold text-gray-900">Teman</h1>
                     </div>
                     <div class="flex items-center space-x-4">
-                        <a href="{{ route('admin.products.index') }}" class="text-gray-600 hover:text-gray-900">Admin Panel</a>
+                        <a href="{{ route('admin.dashboard') }}" class="text-gray-600 hover:text-gray-900">Admin Panel</a>
                     </div>
                 </div>
             </div>

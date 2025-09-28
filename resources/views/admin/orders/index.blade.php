@@ -32,7 +32,7 @@
                     <i data-feather="clock" class="w-6 h-6"></i>
                 </div>
                 <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-600">Pending</p>
+                    <p class="text-sm font-medium text-gray-600">Pending Verification</p>
                     <p class="text-2xl font-semibold text-gray-900">{{ $orders && $ordersCount > 0 ? $orders->where('status', 'pending')->count() : 0 }}</p>
                 </div>
             </div>
@@ -89,7 +89,7 @@
                         <select name="status" 
                                 class="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-primary-500 focus:border-transparent">
                             <option value="">All Status</option>
-                            <option value="pending" {{ $currentStatus === 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="pending" {{ $currentStatus === 'pending' ? 'selected' : '' }}>Pending Verification</option>
                             <option value="processing" {{ $currentStatus === 'processing' ? 'selected' : '' }}>Processing</option>
                             <option value="shipped" {{ $currentStatus === 'shipped' ? 'selected' : '' }}>Shipped</option>
                             <option value="delivered" {{ $currentStatus === 'delivered' ? 'selected' : '' }}>Delivered</option>
@@ -176,7 +176,7 @@
                                 @endphp
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['bg'] }} {{ $config['text'] }}">
                                     <i data-feather="{{ $config['icon'] }}" class="w-3 h-3 mr-1"></i>
-                                    {{ ucfirst($order->status) }}
+                                    {{ $order->status === 'pending' ? 'Pending Verification' : ucfirst($order->status) }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
