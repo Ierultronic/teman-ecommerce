@@ -32,6 +32,13 @@
                     @endif">
                     {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                 </span>
+                @if($order->payment_receipt_path)
+                    <button onclick="showReceiptModal('{{ Storage::url($order->payment_receipt_path) }}', 'Payment Receipt - Order #{{ $order->id }}', 'Payment verification receipt')" 
+                            class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                        <i data-feather="eye" class="w-4 h-4 mr-2"></i>
+                        View Receipt
+                    </button>
+                @endif
                 @if(in_array($order->status, ['paid', 'processing', 'shipped', 'delivered']))
                     <a href="{{ route('admin.orders.e-invoice', $order) }}" 
                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
@@ -294,11 +301,19 @@
     <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
         @if($order->payment_receipt_path)
             <div class="mb-4">
-                <h4 class="text-sm font-medium text-gray-700 mb-2">Payment Receipt</h4>
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="text-sm font-medium text-gray-700">Payment Receipt</h4>
+                    <button onclick="showReceiptModal('{{ Storage::url($order->payment_receipt_path) }}', 'Payment Receipt - Order #{{ $order->id }}', 'Payment verification receipt')" 
+                            class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                        <i data-feather="maximize-2" class="w-3 h-3 mr-1"></i>
+                        View Full Size
+                    </button>
+                </div>
                 <div class="border border-gray-200 rounded-lg p-4">
                     <img src="{{ Storage::url($order->payment_receipt_path) }}" 
                          alt="Payment Receipt" 
-                         class="max-w-full h-auto max-h-96 mx-auto">
+                         class="max-w-full h-auto max-h-96 mx-auto cursor-pointer"
+                         onclick="showReceiptModal('{{ Storage::url($order->payment_receipt_path) }}', 'Payment Receipt - Order #{{ $order->id }}', 'Payment verification receipt')">
                 </div>
             </div>
         @endif

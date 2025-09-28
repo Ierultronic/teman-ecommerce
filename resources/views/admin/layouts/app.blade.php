@@ -167,6 +167,9 @@
 
     <!-- Confirmation Modal Component -->
     <x-confirmation-modal />
+    
+    <!-- Receipt Modal Component -->
+    <x-receipt-modal />
 
     <script>
         // Initialize Feather icons
