@@ -22,6 +22,7 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class)->except(['create', 'store']);
     Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::post('orders/{order}/verify-payment', [App\Http\Controllers\Admin\OrderController::class, 'verifyPayment'])->name('orders.verify-payment');
+    Route::get('orders/{order}/e-invoice', [App\Http\Controllers\Admin\OrderController::class, 'generateEInvoice'])->name('orders.e-invoice');
 });
 
 // Order placement (public)

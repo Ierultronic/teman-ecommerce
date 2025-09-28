@@ -32,6 +32,13 @@
                     @endif">
                     {{ ucfirst(str_replace('_', ' ', $order->status)) }}
                 </span>
+                @if(in_array($order->status, ['paid', 'processing', 'shipped', 'delivered']))
+                    <a href="{{ route('admin.orders.e-invoice', $order) }}" 
+                       class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                        <i data-feather="file-text" class="w-4 h-4 mr-2"></i>
+                        Generate E-Invoice
+                    </a>
+                @endif
             </div>
         </div>
     </div>

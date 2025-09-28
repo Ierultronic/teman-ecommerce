@@ -6,10 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Services\EInvoiceService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class OrderController extends Controller
 {
@@ -64,7 +67,7 @@ class OrderController extends Controller
             $order->update([
                 'status' => 'processing',
                 'payment_verified_at' => now(),
-                'payment_verified_by' => auth()->id(),
+                'payment_verified_by' => Auth::id(),
             ]);
             
             $message = 'Payment verified successfully! Order is now being processed.';
@@ -72,12 +75,33 @@ class OrderController extends Controller
             $order->update([
                 'status' => 'cancelled',
                 'payment_verified_at' => now(),
-                'payment_verified_by' => auth()->id(),
+                'payment_verified_by' => Auth::id(),
             ]);
             
             $message = 'Payment rejected. Order cancelled.';
         }
 
         return Redirect::back()->with('success', $message);
+    }
+
+    public function generateEInvoice(Order $order)
+    {
+        $order->load(['orderItems.product', 'orderItems.productVariant']);
+        
+        // Check if order is eligible for e-invoice generation
+        if (!in_array($order->status, ['paid', 'processing', 'shipped', 'delivered'])) {
+            return Redirect::back()->with('error', 'E-invoice can only be generated for paid orders.');
+        }
+        
+        $eInvoiceService = new EInvoiceService();
+        $invoiceData = $eInvoiceService->generateEInvoiceData($order);
+        
+        // Generate PDF in landscape mode
+        $pdf = Pdf::loadView('admin.orders.e-invoice', compact('order', 'invoiceData'))
+            ->setPaper('A4', 'landscape');
+        
+        $filename = 'e-invoice-' . $invoiceData['invoice_number'] . '.pdf';
+        
+        return $pdf->download($filename);
     }
 }
