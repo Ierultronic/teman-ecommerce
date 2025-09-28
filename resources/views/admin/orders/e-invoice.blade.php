@@ -26,6 +26,7 @@
         
         .company-info {
             flex: 1;
+            text-align: center;
         }
         
         .company-name {
@@ -188,19 +189,21 @@
         }
         
         .validation-info {
-            text-align: right;
-            flex: 1;
+            flex-shrink: 0;
         }
         
         .qr-code {
             width: 60px;
             height: 60px;
-            border: 1px solid #000;
+            border: 2px solid #000;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 6px;
             text-align: center;
+            background-color: #ffffff;
+            color: #000;
+            font-weight: bold;
         }
         
         .page-container {
@@ -270,12 +273,12 @@
             </div>
             
             <div class="buyer-info">
-                <div class="section-title">Buyer TIN: {{ config('einvoice.buyer.default_tin', 'Not Provided') }}</div>
+                <div class="section-title">Buyer TIN: Not Provided</div>
                 <div class="info-row">
                     <span class="info-label">Buyer Name:</span> {{ $invoiceData['buyer']['name'] }}
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Buyer Identification Number:</span> {{ config('einvoice.buyer.default_id_number', 'Not Provided') }}
+                    <span class="info-label">Buyer Identification Number:</span> Not Provided
                 </div>
                 <div class="info-row">
                     <span class="info-label">Buyer Address:</span> 
