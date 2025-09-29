@@ -90,6 +90,29 @@
                         <i data-feather="shopping-cart" class="w-5 h-5 mr-3"></i>
                         Orders
                     </a>
+                    
+                    <!-- Discounts & Promotions Section -->
+                    <div class="mt-4">
+                        <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Discounts & Promotions</p>
+                        <div class="space-y-1 ml-2">
+                            <a href="{{ route('admin.vouchers.index') }}" 
+                               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.vouchers.index') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                <i data-feather="tag" class="w-4 h-4 mr-3"></i>
+                                Vouchers
+                            </a>
+                            <a href="{{ route('admin.discounts.index') }}" 
+                               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.discounts.index') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                <i data-feather="percent" class="w-4 h-4 mr-3"></i>
+                                Discounts
+                            </a>
+                            <a href="{{ route('admin.promotions.index') }}" 
+                               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.promotions.index') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                <i data-feather="gift" class="w-4 h-4 mr-3"></i>
+                                Promotions
+                            </a>
+                        </div>
+                    </div>
+                    
                     <a href="{{ route('store.index') }}" 
                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors text-gray-700 hover:bg-gray-50 hover:text-gray-900">
                         <i data-feather="external-link" class="w-5 h-5 mr-3"></i>
@@ -173,8 +196,14 @@
 
     <script>
         // Initialize Feather icons
+        function initializeFeatherIcons() {
+            if (typeof feather !== 'undefined') {
+                feather.replace();
+            }
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
-            feather.replace();
+            initializeFeatherIcons();
             
             // Sidebar toggle functionality
             const sidebar = document.getElementById('sidebar');
@@ -215,6 +244,20 @@
                 sidebar.classList.add('sidebar-closed');
             }
         });
+
+        // Initialize Feather icons for Livewire
+        document.addEventListener('livewire:init', () => {
+            // Initialize icons after initial render
+            initializeFeatherIcons();
+            
+            // Initialize icons after any Livewire updates
+            Livewire.hook('morph.updated', ({ component }) => {
+                setTimeout(initializeFeatherIcons, 10);
+            });
+        });
+
+        // Backup initialization for any missed cases
+        document.addEventListener('livewire:navigated', initializeFeatherIcons);
     </script>
     @livewireScripts
 </body>

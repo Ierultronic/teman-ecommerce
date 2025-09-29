@@ -23,6 +23,17 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
     Route::post('orders/{order}/verify-payment', [App\Http\Controllers\Admin\OrderController::class, 'verifyPayment'])->name('orders.verify-payment');
     Route::get('orders/{order}/e-invoice', [App\Http\Controllers\Admin\OrderController::class, 'generateEInvoice'])->name('orders.e-invoice');
+    
+    // Discount management routes
+    Route::get('vouchers', function () {
+        return view('admin.vouchers');
+    })->name('vouchers.index');
+    Route::get('discounts', function () {
+        return view('admin.discounts');
+    })->name('discounts.index');
+    Route::get('promotions', function () {
+        return view('admin.promotions');
+    })->name('promotions.index');
 });
 
 // Order placement (public)
