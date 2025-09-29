@@ -100,6 +100,14 @@
                                     @else
                                         <span class="font-medium text-gray-900">RM {{ number_format($voucher->value, 2) }} off</span>
                                     @endif
+                                    @if($voucher->minimum_amount)
+                                        <span>•</span>
+                                        <span>Min: RM {{ number_format($voucher->minimum_amount, 2) }}</span>
+                                    @endif
+                                    @if($voucher->maximum_discount)
+                                        <span>•</span>
+                                        <span>Max: RM {{ number_format($voucher->maximum_discount, 2) }}</span>
+                                    @endif
                                 </div>
                             </div>
 
@@ -214,6 +222,9 @@
                                 </div>
                                 @if($voucher->minimum_amount)
                                     <div class="text-xs text-gray-500 mt-1">Min: RM {{ number_format($voucher->minimum_amount, 2) }}</div>
+                                @endif
+                                @if($voucher->maximum_discount)
+                                    <div class="text-xs text-gray-500 mt-1">Max: RM {{ number_format($voucher->maximum_discount, 2) }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4">
@@ -361,7 +372,7 @@
                                         @error('value') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                     </div>
 
-                                    <div class="grid grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-2 gap-3">
                                         <div>
                                             <label for="minimumAmount" class="block text-sm font-medium text-gray-700 mb-2">Min Order (RM)</label>
                                             <input type="number" step="0.01" min="0" wire:model="minimumAmount" id="minimumAmount" placeholder="0.00"
@@ -369,11 +380,17 @@
                                             @error('minimumAmount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                         </div>
                                         <div>
-                                            <label for="usageLimit" class="block text-sm font-medium text-gray-700 mb-2">Usage Limit</label>
-                                            <input type="number" min="1" wire:model="usageLimit" id="usageLimit" placeholder="Unlimited"
+                                            <label for="maximumDiscount" class="block text-sm font-medium text-gray-700 mb-2">Max Discount (RM)</label>
+                                            <input type="number" step="0.01" min="0" wire:model="maximumDiscount" id="maximumDiscount" placeholder="Unlimited"
                                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                            @error('usageLimit') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                            @error('maximumDiscount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                         </div>
+                                    </div>
+                                    <div>
+                                        <label for="usageLimit" class="block text-sm font-medium text-gray-700 mb-2">Usage Limit</label>
+                                        <input type="number" min="1" wire:model="usageLimit" id="usageLimit" placeholder="Unlimited"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        @error('usageLimit') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                     </div>
 
                                     <div class="space-y-3">

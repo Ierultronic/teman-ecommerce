@@ -352,12 +352,20 @@
                                     @error('value') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label for="minimumAmount" class="block text-sm font-medium text-gray-700 mb-2">Min Order (RM)</label>
-                                        <input type="number" step="0.01" min="0" wire:model="minimumAmount" id="minimumAmount" placeholder="0.00"
-                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                        @error('minimumAmount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                <div class="grid grid-cols-1 gap-4">
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label for="minimumAmount" class="block text-sm font-medium text-gray-700 mb-2">Min Order (RM)</label>
+                                            <input type="number" step="0.01" min="0" wire:model="minimumAmount" id="minimumAmount" placeholder="0.00"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                            @error('minimumAmount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                        </div>
+                                        <div>
+                                            <label for="maximumDiscount" class="block text-sm font-medium text-gray-700 mb-2">Max Discount (RM)</label>
+                                            <input type="number" step="0.01" min="0" wire:model="maximumDiscount" id="maximumDiscount" placeholder="Unlimited"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                            @error('maximumDiscount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                        </div>
                                     </div>
                                     <div>
                                         <label for="usageLimit" class="block text-sm font-medium text-gray-700 mb-2">Usage Limit</label>
