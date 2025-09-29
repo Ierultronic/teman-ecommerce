@@ -1,0 +1,17 @@
+{
+    "name": "Laravel PHP 8.3",
+    "image": "mcr.microsoft.com/devcontainers/php:8.3",
+    "features": {
+        "ghcr.io/devcontainers/features/node:1": {
+            "version": "20"
+        },
+        "ghcr.io/devcontainers/features/postgres:1": {
+            "version": "15"
+        },
+        "ghcr.io/devcontainers/features/composer:1": {}
+    },
+    "forwardPorts": [
+        8000
+    ],
+    "postCreateCommand": "composer install && cp .env.example .env && php artisan key:generate"
+}
