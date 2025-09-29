@@ -1,23 +1,27 @@
 {
-    "name": "Teman E-commerce Laravel Dev",
-    "dockerComposeFile": "docker-compose.yml",
-    "service": "app",
-    "workspaceFolder": "/workspace",
+    "name": "Laravel PHP 8.3",
+    "image": "mcr.microsoft.com/devcontainers/php:8.3",
+  
     "features": {
       "ghcr.io/devcontainers/features/node:1": {
-        "version": "20"
-      }
+        "version": "18"
+      },
+      "ghcr.io/devcontainers/features/postgres-client:1": {}
     },
-    "forwardPorts": [8000, 5432],
-    "postCreateCommand": "bash .devcontainer/setup.sh",
+  
+    "postCreateCommand": "composer install && cp .env.example .env && php artisan key:generate",
+  
     "customizations": {
       "vscode": {
         "extensions": [
-          "ms-azuretools.vscode-docker",
           "bmewburn.vscode-intelephense-client",
-          "esbenp.prettier-vscode"
+          "junstyle.php-cs-fixer",
+          "ms-azuretools.vscode-docker"
         ]
       }
-    }
+    },
+  
+    "forwardPorts": [8000],
+    "remoteUser": "vscode"
   }
   
