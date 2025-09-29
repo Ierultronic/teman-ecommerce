@@ -36,16 +36,23 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($promotions as $promotion)
-                        <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $promotion->title }}</div>
-                                @if($promotion->description)
-                                    <div class="text-sm text-gray-500">{{ Str::limit($promotion->description, 50) }}</div>
-                                @endif
+                                <div class="flex items-center space-x-3">
+                                    @if($promotion->banner_image)
+                                        <img src="{{ $promotion->banner_image_url }}" alt="{{ $promotion->title }}" class="w-12 h-8 object-cover rounded">
+                                    @endif
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">{{ $promotion->title }}</div>
+                                        @if($promotion->description)
+                                            <div class="text-sm text-gray-500">{{ Str::limit($promotion->description, 50) }}</div>
+                                        @endif
+                                    </div>
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
-                                    {{ ucwords(str_replace('_', ' ', $promotion->type)) }}
+                                    {{ $promotion->type }}
                                 </span>
                                 @if($promotion->exclusive)
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 ml-1">
@@ -57,10 +64,16 @@
                                 {{ $promotion->priority }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
-                                    {{ $promotion->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                                    {{ ucfirst($promotion->status) }}
-                                </span>
+                                @if($promotion->deleted_at)
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                        Deleted
+                                    </span>
+                                @else
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full 
+                                        {{ $promotion->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
+                                        {{ ucfirst($promotion->status) }}
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 @if ($promotion->starts_at && $promotion->ends_at)
@@ -79,14 +92,30 @@
                                             wire:click="editPromotion({{ $promotion->id }})">
                                         <i data-feather="edit-2" class="w-4 h-4"></i>
                                     </button>
-                                    <button class="{{ $promotion->status === 'active' ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900' }} p-1" 
-                                            wire:click="toggleStatus({{ $promotion->id }})">
-                                        <i data-feather="{{ $promotion->status === 'active' ? 'pause' : 'play' }}" class="w-4 h-4"></i>
-                                    </button>
-                                    <button class="text-red-600 hover:text-red-900 p-1" 
-                                            wire:click="$set('confirmingDeletion', {{ $promotion->id }})">
-                                        <i data-feather="trash-2" class="w-4 h-4"></i>
-                                    </button>
+                                    @if(!$promotion->deleted_at)
+                                        @php
+                                            $buttonClass = $promotion->status === 'active' ? 'text-yellow-600 hover:text-yellow-900' : 'text-green-600 hover:text-green-900';
+                                            $iconClass = $promotion->status === 'active' ? 'pause' : 'play';
+                                        @endphp
+                                        <button class="{{ $buttonClass }} p-1" 
+                                                wire:click="toggleStatus({{ $promotion->id }})"
+                                                title="Toggle status">
+                                            <i data-feather="{{ $iconClass }}" class="w-4 h-4"></i>
+                                        </button>
+                                    @endif
+                                    @if($promotion->deleted_at)
+                                        <button class="text-green-600 hover:text-green-900 p-1" 
+                                                wire:click="restorePromotion({{ $promotion->id }})"
+                                                title="Restore promotion">
+                                            <i data-feather="refresh-cw" class="w-4 h-4"></i>
+                                        </button>
+                                    @else
+                                        <button class="text-red-600 hover:text-red-900 p-1" 
+                                                wire:click="confirmDelete({{ $promotion->id }})"
+                                                title="Delete promotion">
+                                            <i data-feather="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
@@ -150,21 +179,49 @@
 
                                 <div>
                                     <label for="type" class="block text-sm font-medium text-gray-700 mb-2">Promotion Type *</label>
-                                    <select wire:model="type" id="type"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                        <option value="buy_x_get_y">Buy X Get Y</option>
-                                        <option value="buy_x_get_percentage">Buy X Get Percentage</option>
-                                        <option value="bulk_discount">Bulk Discount</option>
-                                        <option value="category_discount">Category Discount</option>
-                                    </select>
+                                    <input type="text" wire:model="type" id="type" placeholder="e.g., Summer Sale, Black Friday Deal, New Product Launch"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
                                     @error('type') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
                                 </div>
 
                                 <div>
-                                    <label for="minimumAmount" class="block text-sm font-medium text-gray-700 mb-2">Minimum Amount (RM)</label>
-                                    <input type="number" step="0.01" min="0" wire:model="minimumAmount" id="minimumAmount" placeholder="0.00"
+                                    <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Promotion Description</label>
+                                    <textarea wire:model="description" id="description" rows="3" placeholder="Describe the promotion details..."
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"></textarea>
+                                    @error('description') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label for="bannerImage" class="block text-sm font-medium text-gray-700 mb-2">Banner Image</label>
+                                    <input type="file" wire:model="bannerImage" id="bannerImage" accept="image/*"
                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
-                                    @error('minimumAmount') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    @if ($bannerImage)
+                                        <div class="mt-2">
+                                            <img src="{{ $bannerImage->temporaryUrl() }}" alt="Preview" class="w-24 h-16 object-cover rounded">
+                                        </div>
+                                    @elseif ($editingPromotion && $editingPromotion->banner_image)
+                                        <div class="mt-2">
+                                            <img src="{{ $editingPromotion->banner_image_url }}" alt="Current Banner" class="w-24 h-16 object-cover rounded">
+                                            <p class="text-xs text-gray-500 mt-1">Current banner image</p>
+                                        </div>
+                                    @endif
+                                    @error('bannerImage') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                </div>
+
+
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label for="startsAt" class="block text-sm font-medium text-gray-700 mb-2">Start Date</label>
+                                        <input type="datetime-local" wire:model="startsAt" id="startsAt"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        @error('startsAt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
+                                    <div>
+                                        <label for="endsAt" class="block text-sm font-medium text-gray-700 mb-2">End Date</label>
+                                        <input type="datetime-local" wire:model="endsAt" id="endsAt"
+                                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500">
+                                        @error('endsAt') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+                                    </div>
                                 </div>
 
                                 <div class="grid grid-cols-2 gap-4">
@@ -195,6 +252,46 @@
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
+    <!-- Delete Confirmation Modal -->
+    @if($confirmingDeletion)
+        <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+            <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                <!-- Background overlay -->
+                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" wire:click="$set('confirmingDeletion', null)"></div>
+
+                <!-- Center the modal -->
+                <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+                <!-- Modal panel -->
+                <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+                    <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                        <div class="sm:flex sm:items-start">
+                            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                                <i data-feather="alert-triangle" class="h-6 w-6 text-red-600"></i>
+                            </div>
+                            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                                <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Promotion</h3>
+                                <div class="mt-2">
+                                    <p class="text-sm text-gray-500">Are you sure you want to delete this promotion? This action cannot be undone.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                        <button wire:click="deletePromotion({{ $confirmingDeletion }})" 
+                                class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                            Delete
+                        </button>
+                        <button wire:click="$set('confirmingDeletion', null)" 
+                                class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                            Cancel
+                        </button>
                     </div>
                 </div>
             </div>

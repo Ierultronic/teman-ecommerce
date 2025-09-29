@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 
 class Promotion extends Model
 {
@@ -71,148 +72,8 @@ class Promotion extends Model
         return true;
     }
 
-    /**
-     * Check if promotion is applicable to the given cart items
-     */
-    public function isApplicableToCart(float $cartTotal): bool
-    {
-        if (!$this->isActive()) {
-            return false;
-        }
-        
-        if ($this->minimum_amount && $cartTotal < $this->minimum_amount) {
-            return false;
-        }
 
-        return true;
-    }
 
-    /**
-     * Calculate promotion discount for cart items
-     */
-    public function calculateDiscountForCart(array $cartItems): float
-    {
-        $cartTotal = array_sum(array_column($cartItems, 'total'));
-        
-        if (!$this->isApplicableToCart($cartTotal)) {
-            return 0.00;
-        }
-
-        $discountAmount = 0.00;
-
-        switch ($this->type) {
-            case 'buy_x_get_y':
-                $discountAmount = $this->calculateBuyXGetYDiscount($cartItems);
-                break;
-            case 'buy_x_get_percentage':
-                $discountAmount = $this->calculateBuyXGetPercentageDiscount($cartItems);
-                break;
-            case 'bulk_discount':
-                $discountAmount = $this->calculateBulkDiscount($cartItems);
-                break;
-            case 'category_discount':
-                $discountAmount = $this->calculateCategoryDiscount($cartItems);
-                break;
-        }
-
-        return min($discountAmount, $cartTotal);
-    }
-
-    /**
-     * Calculate buy X get Y discount
-     */
-    private function calculateBuyXGetYDiscount(array $items): float
-    {
-        $rules = $this->rules;
-        $applicableItems = $this->filterApplicableItems($items);
-        
-        $totalQuantity = array_sum(array_column($applicableItems, 'quantity'));
-        $buyQuantity = $rules['buy_quantity'] ?? 0;
-        $getQuantity = $rules['get_quantity'] ?? 0;
-        $itemPrice = $rules['item_price'] ?? 0;
-
-        if ($buyQuantity > 0 && $getQuantity > 0) {
-            $eligibleDiscounts = floor($totalQuantity / $buyQuantity);
-            return $eligibleDiscounts * $getQuantity * $itemPrice;
-        }
-
-        return 0.00;
-    }
-
-    /**
-     * Calculate buy X get percentage discount
-     */
-    private function calculateBuyXGetPercentageDiscount(array $items): float
-    {
-        $rules = $this->rules;
-        $applicableItems = $this->filterApplicableItems($items);
-        $totalAmount = array_sum(array_column($applicableItems, 'total'));
-        
-        $discountPercentage = $rules['discount_percentage'] ?? 0;
-        
-        return ($totalAmount * $discountPercentage) / 100;
-    }
-
-    /**
-     * Calculate bulk discount based on quantity
-     */
-    private function calculateBulkDiscount(array $items): float
-    {
-        $rules = $this->rules;
-        $applicableItems = $this->filterApplicableItems($items);
-        $totalQuantity = array_sum(array_column($applicableItems, 'quantity'));
-        
-        $bulkDiscounts = $rules['bulk_discounts'] ?? [];
-        
-        foreach ($bulkDiscounts as $discount) {
-            if ($totalQuantity >= $discount['min_quantity']) {
-                $totalAmount = array_sum(array_column($applicableItems, 'total'));
-                if ($discount['type'] === 'percentage') {
-                    return ($totalAmount * $discount['value']) / 100;
-                } else {
-                    return $discount['value'];
-                }
-            }
-        }
-
-        return 0.00;
-    }
-
-    /**
-     * Calculate category discount
-     */
-    private function calculateCategoryDiscount(array $items): float
-    {
-        $rules = $this->rules;
-        $discountPercentage = $rules['discount_percentage'] ?? 0;
-        $applicableItems = $this->filterApplicableItems($items);
-        
-        $totalAmount = array_sum(array_column($applicableItems, 'total'));
-        
-        return ($totalAmount * $discountPercentage) / 100;
-    }
-
-    /**
-     * Filter items based on promotion targets
-     */
-    private function filterApplicableItems(array $items): array
-    {
-        if (empty($this->target_products) && empty($this->target_categories)) {
-            return $items;
-        }
-
-        return array_filter($items, function ($item) {
-            if (!empty($this->target_products) && in_array($item['product_id'], $this->target_products)) {
-                return true;
-            }
-            
-            if (!empty($this->target_categories) && in_array($item['category_id'], $this->target_categories)) {
-                return true;
-            }
-            
-            return false;
-        });
-    }
 
     /**
      * Scope for active promotions ordered by priority
@@ -229,5 +90,43 @@ class Promotion extends Model
                           ->orWhere('ends_at', '>=', now());
                     })
                     ->orderBy('priority', 'desc');
+    }
+
+    /**
+     * Get the banner image URL
+     */
+    public function bannerImageUrl(): Attribute
+    {
+        return Attribute::make(
+            get: function ($value, $attributes) {
+                if (!$attributes['banner_image']) {
+                    return null;
+                }
+                
+                // Check if it's already a full URL
+                if (filter_var($attributes['banner_image'], FILTER_VALIDATE_URL)) {
+                    return $attributes['banner_image'];
+                }
+                
+                return asset('storage/' . $attributes['banner_image']);
+            }
+        );
+    }
+
+    /**
+     * Scope for banner-enabled promotions (for displaying as ads)
+     */
+    public function scopeForBanners($query)
+    {
+        return $query->whereNotNull('banner_image')
+                    ->where('status', 'active')
+                    ->where(function ($q) {
+                        $q->whereNull('starts_at')
+                          ->orWhere('starts_at', '<=', now());
+                    })
+                    ->where(function ($q) {
+                        $q->whereNull('ends_at')
+                          ->orWhere('ends_at', '>=', now());
+                    });
     }
 }
