@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Order extends Model
 {
@@ -31,6 +32,8 @@ class Order extends Model
         'shipping_country',
         'order_notes',
         'same_as_billing',
+        'subtotal',
+        'total_discount',
         'total_price',
         'status',
         'payment_method',
@@ -41,6 +44,8 @@ class Order extends Model
     ];
 
     protected $casts = [
+        'subtotal' => 'decimal:2',
+        'total_discount' => 'decimal:2',
         'total_price' => 'decimal:2',
         'same_as_billing' => 'boolean',
         'payment_verified_at' => 'datetime',
@@ -49,5 +54,36 @@ class Order extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function orderDiscounts(): HasMany
+    {
+        return $this->hasMany(OrderDiscount::class);
+    }
+
+    /**
+     * Calculate and update order totals
+     */
+    public function calculateTotals(): void
+    {
+        $subtotal = $this->orderItems->sum(function ($item) {
+            return $item->quantity * $item->price;
+        });
+
+        $totalDiscount = $this->orderDiscounts->sum('calculated_amount');
+        
+        $this->update([
+            'subtotal' => $subtotal,
+            'total_discount' => $totalDiscount,
+            'total_price' => $subtotal - $totalDiscount
+        ]);
+    }
+
+    /**
+     * Get total discount amount
+     */
+    public function getTotalDiscountAttribute(): float
+    {
+        return $this->orderDiscounts->sum('calculated_amount');
     }
 }
