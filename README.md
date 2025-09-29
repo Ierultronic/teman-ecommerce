@@ -1,149 +1,79 @@
 # Teman E-Commerce
 
-A modern e-commerce platform built with Laravel and Livewire, featuring Malaysian payment integration (FPX & QR), receipt processing with OCR, and comprehensive admin dashboard.
+A modern Laravel e-commerce platform with Malaysian payment integration, featuring FPX & QR payments, voucher/promotion system, OCR receipt processing, and comprehensive admin dashboard.
 
 ## 🌐 Live Demo
-[Live Demo](https://teman-ecommerce-production.up.railway.app/) 
--proly 27/9/2025 kinda dead (free trial mayn)
+[Live Demo](https://teman-ecommerce-production.up.railway.app/) *(Note: Free trial may expire)*
 
 ## 🚀 Tech Stack
 
-### Backend
-- **Laravel 12** - PHP framework
-- **Livewire 3** - Full-stack framework for dynamic UIs
-- **PHP 8.2+** - Server-side language
-- **SQLite** - Default database (supports MySQL, PostgreSQL)
+**Backend:** Laravel 12, Livewire 3, PHP 8.2+, SQLite/MySQL/PostgreSQL  
+**Frontend:** Tailwind CSS 4, Vite, Alpine.js  
+**Dependencies:** Spatie Permissions, Tesseract OCR, DomPDF
 
-### Frontend
-- **Tailwind CSS 4** - Utility-first CSS framework
-- **Vite** - Build tool and dev server
-- **Alpine.js** - Lightweight JavaScript framework (via Livewire)
+## ✨ Key Features
 
-### Key Features
-- **Product Management** - CRUD operations with variants and soft deletes
-- **Order Processing** - Complete order lifecycle management
-- **Payment Integration** - FPX (Malaysian online banking) and QR code payments
-- **Receipt Processing** - OCR-based receipt verification using Tesseract
-- **Admin Dashboard** - Real-time analytics and order management
-- **Role-based Access** - Admin authentication with Spatie Laravel Permission
-- **Stock Management** - Inventory tracking with low stock alerts
+- **🏪 Store Frontend**: Product catalog with variants, shopping cart, checkout
+- **💳 Payment Integration**: FPX (Malaysian banks) & QR code payments  
+- **🎟️ Voucher System**: Coupon codes, promotions, automatic discounts
+- **📄 Receipt Processing**: OCR-based payment verification using Tesseract
+- **📊 Admin Dashboard**: Analytics, order management, inventory tracking
+- **👤 Role Management**: Admin authentication with permission controls
+- **📦 Order Management**: Complete lifecycle from pending to fulfillment
+- **⚠️ Stock Management**: Real-time inventory with low stock alerts
 
-### Dependencies
-- `spatie/laravel-permission` - Role and permission management
-- `thiagoalessio/tesseract_ocr` - OCR for receipt processing
-- `laravel/tinker` - REPL for Laravel
-- `fakerphp/faker` - Fake data generation
+## 🛠️ Quick Setup
 
-## 📋 Prerequisites
-
-- PHP 8.2 or higher
-- Composer
-- Node.js 18+ and npm
-- SQLite (or MySQL/PostgreSQL)
-- Tesseract OCR (for receipt processing)
-
-### Installing Tesseract OCR
-
-**Windows (using Chocolatey):**
-```bash
-choco install tesseract
-```
-
-**macOS (using Homebrew):**
-```bash
-brew install tesseract
-```
-
-**Ubuntu/Debian:**
-```bash
-sudo apt-get install tesseract-ocr
-```
-
-## 🛠️ Installation
-
-1. **Clone the repository**
+1. **Clone & Install**
 ```bash
 git clone <repository-url>
 cd teman_ecommerce
-```
-
-2. **Install PHP dependencies**
-```bash
 composer install
-```
-
-3. **Install Node.js dependencies**
-```bash
 npm install
 ```
 
-4. **Environment setup**
+2. **Environment Setup**
 ```bash
 cp .env.example .env
 php artisan key:generate
+touch database/database.sqlite  # Or configure MySQL/PostgreSQL
 ```
 
-5. **Database setup**
-```bash
-# For SQLite (default)
-touch database/database.sqlite
-
-# For MySQL/PostgreSQL, update .env file with database credentials
-```
-
-6. **Run migrations and seeders**
+3. **Initialize Database**
 ```bash
 php artisan migrate
 php artisan db:seed
 ```
 
-7. **Build assets**
+4. **Build & Start**
 ```bash
-npm run build
-```
-
-8. **Start the development server**
-```bash
+npm run build  # or 'npm run dev' for development
 php artisan serve
 ```
 
 ## 🔧 Development
 
-### Development Script
-Use the included development script to run all services concurrently:
+**Single Command Development:**
 ```bash
-composer run dev
+composer run dev  # Starts server, queue, logs, and Vite dev server
 ```
 
-This starts:
-- Laravel development server
-- Queue worker
-- Log viewer (Pail)
-- Vite dev server
-
-### Available Commands
+**Other Commands:**
 ```bash
-# Run tests
-composer run test
-
-# Code formatting
-./vendor/bin/pint
-
-# Clear caches
-php artisan optimize:clear
+composer run test     # Run tests
+./vendor/bin/pint     # Code formatting
+php artisan optimize:clear  # Clear caches
 ```
 
-## 🗄️ Database Configuration
+## 🗄️ Database Options
 
-The application supports multiple database drivers:
-
-### SQLite (Default)
+**SQLite (Default):**
 ```env
 DB_CONNECTION=sqlite
 DB_DATABASE=/path/to/database.sqlite
 ```
 
-### MySQL
+**MySQL:**
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
@@ -153,7 +83,7 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### PostgreSQL
+**PostgreSQL:**
 ```env
 DB_CONNECTION=pgsql
 DB_HOST=127.0.0.1
@@ -163,93 +93,59 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-## 🐳 Docker Deployment
+## 📋 System Requirements
 
-The project includes a Dockerfile for containerized deployment:
+- PHP 8.2+
+- Composer
+- Node.js 18+ & npm
+- SQLite (default) or MySQL/PostgreSQL
+- **Tesseract OCR** (for receipt processing)
 
+### Install Tesseract OCR
 ```bash
-# Build the image
-docker build -t teman-ecommerce .
+# Windows (Chocolatey)
+choco install tesseract
 
-# Run the container
-docker run -p 80:80 teman-ecommerce
+# macOS (Homebrew)  
+brew install tesseract
+
+# Ubuntu/Debian
+sudo apt-get install tesseract-ocr
 ```
 
-## 👤 Admin Access
+## 👤 Default Access
 
-Default admin credentials:
-- **Email:** `admin@teman.com`
-- **Password:** `admin123`
+**Admin Panel:**
+- Email: `admin@teman.com`
+- Password: `admin123`
+
+Access admin features at `/admin` after login.
 
 ## 📁 Project Structure
 
 ```
 app/
-├── Http/Controllers/     # API and web controllers
-├── Livewire/            # Livewire components
-├── Models/              # Eloquent models
-├── Services/            # Business logic services
-└── Providers/           # Service providers
+├── Http/Controllers/  # Web controllers
+├── Livewire/         # UI components (StorePage, Admin panels, etc.)
+├── Models/           # Eloquent models (Product, Order, Voucher, etc.)
+└── Services/         # Business logic (DiscountService, ReceiptProcessing, etc.)
 
-resources/
-├── views/               # Blade templates
-│   ├── livewire/       # Livewire component views
-│   └── admin/          # Admin panel views
-├── css/                # Stylesheets
-└── js/                 # JavaScript files
+resources/views/
+├── livewire/         # Livewire component templates
+├── admin/           # Admin dashboard views
+└── components/       # Reusable Blade components
 
 database/
-├── migrations/          # Database migrations
-└── seeders/            # Database seeders
+├── migrations/       # Database schema
+└── seeders/         # Sample data
 ```
-
-## 🔐 Security Features
-
-- CSRF protection
-- SQL injection prevention
-- XSS protection
-- Role-based access control
-- Secure file uploads
-- Input validation and sanitization
-
-## 📱 Payment Integration
-
-### FPX (Malaysian Online Banking)
-- Integration with Malaysian banks
-- Real-time payment verification
-- Callback handling
-
-### QR Code Payments
-- Generate QR codes for payments
-- Mobile payment integration
-- Receipt verification
-
-## 🔍 Receipt Processing
-
-The application includes OCR-based receipt processing:
-- Upload payment receipts
-- Extract reference numbers using Tesseract
-- Automatic payment verification
-- Support for multiple image formats
 
 ## 🚀 Deployment
 
-### Railway (Current)
-The application is deployed on Railway with automatic deployments from the main branch.
-
-### Other Platforms
-- **Heroku:** Use the included Dockerfile
-- **DigitalOcean:** App Platform compatible
-- **VPS:** Standard Laravel deployment process
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Run tests and linting
-5. Submit a pull request
+**Railway (Current):** Auto-deployment from main branch  
+**Docker:** `docker build -t teman-ecommerce . && docker run -p 80:80 teman-ecommerce`  
+**Heroku/DigitalOcean:** Compatible with standard Laravel deployment  
 
 ## 📄 License
 
-This project is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MIT License - See [LICENSE](LICENSE) for details.
