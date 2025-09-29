@@ -74,13 +74,11 @@ class Promotion extends Model
     /**
      * Check if promotion is applicable to the given cart items
      */
-    public function isApplicableToCart(ShoppingCart $cart): bool
+    public function isApplicableToCart(float $cartTotal): bool
     {
         if (!$this->isActive()) {
             return false;
         }
-
-        $cartTotal = $cart->getTotal();
         
         if ($this->minimum_amount && $cartTotal < $this->minimum_amount) {
             return false;
@@ -92,31 +90,32 @@ class Promotion extends Model
     /**
      * Calculate promotion discount for cart items
      */
-    public function calculateDiscountForCart(ShoppingCart $cart): float
+    public function calculateDiscountForCart(array $cartItems): float
     {
-        if (!$this->isApplicableToCart($cart)) {
+        $cartTotal = array_sum(array_column($cartItems, 'total'));
+        
+        if (!$this->isApplicableToCart($cartTotal)) {
             return 0.00;
         }
 
-        $items = $cart->getItems();
         $discountAmount = 0.00;
 
         switch ($this->type) {
             case 'buy_x_get_y':
-                $discountAmount = $this->calculateBuyXGetYDiscount($items);
+                $discountAmount = $this->calculateBuyXGetYDiscount($cartItems);
                 break;
             case 'buy_x_get_percentage':
-                $discountAmount = $this->calculateBuyXGetPercentageDiscount($items);
+                $discountAmount = $this->calculateBuyXGetPercentageDiscount($cartItems);
                 break;
             case 'bulk_discount':
-                $discountAmount = $this->calculateBulkDiscount($items);
+                $discountAmount = $this->calculateBulkDiscount($cartItems);
                 break;
             case 'category_discount':
-                $discountAmount = $this->calculateCategoryDiscount($items);
+                $discountAmount = $this->calculateCategoryDiscount($cartItems);
                 break;
         }
 
-        return min($discountAmount, $cart->getTotal());
+        return min($discountAmount, $cartTotal);
     }
 
     /**

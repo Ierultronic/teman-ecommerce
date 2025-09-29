@@ -42,7 +42,7 @@ class OrderController extends Controller
 
     public function show(Order $order)
     {
-        $order->load(['orderItems.product', 'orderItems.productVariant']);
+        $order->load(['orderItems.product', 'orderItems.productVariant', 'orderDiscounts.discountable']);
         return View::make('admin.orders.show', compact('order'));
     }
 

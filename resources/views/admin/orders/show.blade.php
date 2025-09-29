@@ -71,7 +71,17 @@
                 <dd class="mt-1 text-sm text-gray-900">{{ $order->created_at->format('d/m/Y H:ia') }}</dd>
             </div>
             <div>
-                <dt class="text-sm font-medium text-gray-500">Total Amount</dt>
+                <dt class="text-sm font-medium text-gray-500">Subtotal</dt>
+                <dd class="mt-1 text-sm text-gray-700">RM{{ number_format($order->subtotal ?? 0, 2) }}</dd>
+            </div>
+            @if($order->total_discount > 0)
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Total Discount</dt>
+                    <dd class="mt-1 text-sm text-red-600">-RM{{ number_format($order->total_discount, 2) }}</dd>
+                </div>
+            @endif
+            <div>
+                <dt class="text-sm font-medium text-gray-500">Final Amount</dt>
                 <dd class="mt-1 text-lg font-semibold text-green-600">RM{{ number_format($order->total_price, 2) }}</dd>
             </div>
             @if($order->payment_method)
@@ -221,6 +231,143 @@
     </div>
     <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
         <div class="text-sm text-gray-900 whitespace-pre-wrap">{{ $order->order_notes }}</div>
+    </div>
+</div>
+@endif
+
+<!-- Applied Discounts, Vouchers & Promotions -->
+@if($order->orderDiscounts->count() > 0)
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Applied Discounts & Promotions</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Detailed breakdown of all discounts, vouchers, and promotions applied to this order</p>
+    </div>
+    <div class="border-t border-gray-200">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Discount Type</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Code/Rule</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied Rules</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach($order->orderDiscounts as $orderDiscount)
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
+                                    @if($orderDiscount->discountable_type === 'App\Models\Voucher') bg-blue-100 text-blue-800
+                                    @elseif($orderDiscount->discountable_type === 'App\Models\Discount') bg-green-100 text-green-800
+                                    @else bg-purple-100 text-purple-800
+                                    @endif">
+                                    @if($orderDiscount->discountable_type === 'App\Models\Voucher') Voucher
+                                    @elseif($orderDiscount->discountable_type === 'App\Models\Discount') Discount
+                                    @elseif($orderDiscount->discountable_type === 'App\Models\Promotion') Promotion
+                                    @else Other
+                                    @endif
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $orderDiscount->discountable_source }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded-full 
+                                    @if($orderDiscount->type === 'percentage') bg-yellow-100 text-yellow-800
+                                    @else bg-indigo-100 text-indigo-800
+                                    @endif">
+                                    {{ $orderDiscount->discount_type_name }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <div class="font-medium">
+                                    @if($orderDiscount->applied_code)
+                                        <code class="bg-gray-100 px-2 py-1 rounded text-sm">{{ $orderDiscount->applied_code }}</code>
+                                    @elseif($orderDiscount->discountable_type === 'App\Models\Voucher' && $orderDiscount->discountable && property_exists($orderDiscount->discountable, 'code'))
+                                        <code class="bg-gray-100 px-2 py-1 rounded text-sm">{{ $orderDiscount->discountable->code }}</code>
+                                    @else
+                                        <span class="text-gray-500">System Applied</span>
+                                    @endif
+                                </div>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    {{ $orderDiscount->name }}
+                                    @if($orderDiscount->discountable)
+                                        @php
+                                            $discountable = $orderDiscount->discountable;
+                                            $description = null;
+                                            if($discountable instanceof \App\Models\Voucher || $discountable instanceof \App\Models\Discount) {
+                                                $description = $discountable->description ?? '';
+                                            } elseif($discountable instanceof \App\Models\Promotion) {
+                                                $description = $discountable->title ?? '';
+                                            }
+                                        @endphp
+                                        @if($description)
+                                            - {{ Str::limit($description, 50) }}
+                                        @endif
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <span class="font-medium text-red-600">-RM{{ number_format($orderDiscount->calculated_amount, 2) }}</span>
+                                @if($orderDiscount->value)
+                                    <div class="text-xs text-gray-500 mt-1">
+                                        @if($orderDiscount->type === 'percentage')
+                                            {{ number_format($orderDiscount->value, 1) }}% off
+                                        @else
+                                            RM{{ number_format($orderDiscount->value, 2) }}
+                                        @endif
+                                    </div>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @if($orderDiscount->applied_rules)
+                                    <div class="max-w-xs">
+                                        @foreach($orderDiscount->applied_rules as $rule => $value)
+                                            <div class="text-xs">
+                                                <span class="font-medium">{{ ucfirst(str_replace('_', ' ', $rule)) }}:</span>
+                                                {{ is_array($value) ? json_encode($value) : $value }}
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <span class="text-gray-500 text-xs">No specific rules</span>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+                <tfoot class="bg-gray-50">
+                    <tr>
+                        <td colspan="4" class="px-6 py-4 text-right text-sm font-medium text-gray-900">
+                            Total Discounts Applied:
+                        </td>
+                        <td class="px-6 py-4 text-sm font-semibold text-red-600">
+                            -RM{{ number_format($order->orderDiscounts->sum('calculated_amount'), 2) }}
+                        </td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+        
+        <!-- Additional Information -->
+        <div class="px-4 py-3 bg-gray-50 border-t border-gray-200">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="text-xs text-gray-600">
+                    <span class="font-medium">Subtotal:</span> RM{{ number_format($order->subtotal ?? 0, 2) }}
+                </div>
+                <div class="text-xs text-gray-600">
+                    <span class="font-medium">Total Discount:</span> RM{{ number_format($order->orderDiscounts->sum('calculated_amount'), 2) }}
+                </div>
+                <div class="text-xs font-medium">
+                    <span class="text-gray-600">Final Total:</span> 
+                    <span class="text-green-600">RM{{ number_format($order->total_price, 2) }}</span>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 @endif

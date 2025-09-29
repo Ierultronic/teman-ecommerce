@@ -8,6 +8,7 @@ use App\Http\Controllers\AuthController;
 
 // Store routes (public)
 Route::get('/', [StoreController::class, 'index'])->name('store.index');
+Route::get('/vouchers', App\Livewire\CustomerVouchers::class)->name('vouchers.index');
 
 // Admin routes (protected)
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {

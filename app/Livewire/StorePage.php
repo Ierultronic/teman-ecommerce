@@ -6,6 +6,8 @@ use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\ProductVariant;
+use App\Models\Voucher;
+use App\Services\DiscountService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Collection;
@@ -50,6 +52,12 @@ class StorePage extends Component
     public $cartCount = 0;
     public $cartTotal = 0;
     
+    // Voucher and discount properties
+    public $appliedVoucher = null;
+    public $voucherDiscountAmount = 0.00;
+    public $automaticDiscounts = 0.00;
+    public $finalTotal = 0.00;
+    
     // Computed properties for current product modal
     public $currentVariantId = null;
     public $currentVariant = null;
@@ -71,8 +79,10 @@ class StorePage extends Component
         // Load cart from localStorage if available
         $this->dispatch('load-cart-from-storage');
         
-        // Initialize cart properties
-        $this->updateCartProperties();
+        // Initialize cart properties (only if cart was not loaded from storage)
+        if (empty($this->cart)) {
+            $this->updateCartProperties();
+        }
     }
 
     public function getCartQuantity($productId, $variantId = null)
@@ -293,6 +303,41 @@ class StorePage extends Component
         $this->cartTotal = collect($this->cart)->sum(function($item) {
             return $item['price'] * $item['quantity'];
         });
+        
+        // Recalculate discounts and final total
+        $this->calculateDiscountsAndFinalTotal();
+    }
+    
+    protected function calculateDiscountsAndFinalTotal()
+    {
+        // Convert cart to format expected by DiscountService
+        $cartItems = [];
+        foreach ($this->cart as $cartKey => $item) {
+            $cartItems[] = [
+                'product_id' => $item['product_id'],
+                'variant_id' => $item['variant_id'],
+                'quantity' => $item['quantity'],
+                'price' => $item['price'],
+                'total' => $item['price'] * $item['quantity'],
+            ];
+        }
+        
+        // Calculate automatic discounts
+        if (!empty($cartItems)) {
+            $discountService = new DiscountService();
+            $automaticDiscountData = $discountService->calculateAutomaticDiscounts($cartItems);
+            
+            // Sum up all automatic discounts (promotions and auto discounts)
+            $this->automaticDiscounts = $automaticDiscountData->sum('discount_amount');
+        } else {
+            $this->automaticDiscounts = 0.00;
+        }
+        
+        // Calculate final total
+        $this->finalTotal = $this->cartTotal - $this->voucherDiscountAmount - $this->automaticDiscounts;
+        
+        // Ensure final total doesn't go below zero
+        $this->finalTotal = max(0, $this->finalTotal);
     }
 
     public function showOrderForm()
@@ -434,7 +479,7 @@ class StorePage extends Component
         try {
             DB::beginTransaction();
 
-            $totalPrice = $this->getCartTotal();
+            $totalPrice = $this->finalTotal;
 
             $order = Order::create([
                 'customer_name' => $this->customerName,
@@ -646,12 +691,79 @@ class StorePage extends Component
             $this->cart = $cartData;
             $this->updateCartProperties();
             $this->dispatch('cart-updated');
+            
+            // Dispatch event to restore any saved voucher after cart is loaded
+            $this->dispatch('restore-voucher-after-cart-load');
+        }
+    }
+
+    public function restoreVoucher($voucherData)
+    {
+        // Check if voucherData is valid and has required keys
+        if (!$voucherData || !is_array($voucherData)) {
+            return;
+        }
+        
+        if (!isset($voucherData['voucher']) || !isset($voucherData['discount_amount'])) {
+            return;
+        }
+        
+        $this->appliedVoucher = $voucherData['voucher'];
+        $this->voucherDiscountAmount = $voucherData['discount_amount'];
+        
+        // Only recalculate if cart is not empty
+        if (!empty($this->cart)) {
+            $this->calculateDiscountsAndFinalTotal();
         }
     }
 
     public function clearCartFromStorage()
     {
         $this->dispatch('clear-cart-storage');
+    }
+
+    public function applyVoucher($voucherData)
+    {
+        // Check if voucherData is valid and has required keys
+        if (!$voucherData || !is_array($voucherData)) {
+            return;
+        }
+        
+        if (!isset($voucherData['voucher']) || !isset($voucherData['discount_amount'])) {
+            return;
+        }
+        
+        $this->appliedVoucher = $voucherData['voucher'];
+        $this->voucherDiscountAmount = $voucherData['discount_amount'];
+        $this->calculateDiscountsAndFinalTotal();
+        
+        // Dispatch success event
+        $this->dispatch('cart-updated');
+    }
+
+    public function removeVoucher()
+    {
+        $this->appliedVoucher = null;
+        $this->voucherDiscountAmount = 0.00;
+        $this->calculateDiscountsAndFinalTotal();
+        
+        // Dispatch success event
+        $this->dispatch('cart-updated');
+    }
+
+    public function voucherUpdated($discountAmount)
+    {
+        // Handle both array and direct value formats
+        if (is_array($discountAmount) && isset($discountAmount['discount_amount'])) {
+            $this->voucherDiscountAmount = $discountAmount['discount_amount'];
+        } else {
+            $this->voucherDiscountAmount = $discountAmount;
+        }
+        
+        $this->calculateDiscountsAndFinalTotal();
+        
+        // Dispatch success event
+        $this->dispatch('cart-updated');
     }
 
     public function quickAddToCart($productId)

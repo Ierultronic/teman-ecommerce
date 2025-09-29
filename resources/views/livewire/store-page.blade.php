@@ -5,19 +5,44 @@
          toastMessage: '',
          showToast: false,
          animateCartIcon: false,
+         showPromotionModal: true,
+         promotionBubbleVisible: false,
          init() {
             // Initialize cart values from reactive properties
             this.cartCount = this.$wire.cartCount || 0;
             this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
             
-            // Debug logging
-            console.log('Alpine init - cartCount:', this.cartCount, 'cartTotal:', this.cartTotal);
             
             // Listen for cart updates
             this.$wire.on('cart-updated', () => {
                 this.cartCount = this.$wire.cartCount;
                 this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
-                console.log('Cart updated - cartCount:', this.cartCount, 'cartTotal:', this.cartTotal);
+            });
+            
+            // Listen for voucher events
+            this.$wire.on('voucher-applied', (event) => {
+                this.$wire.applyVoucher(event);
+                // Persist voucher to localStorage
+                localStorage.setItem('applied_voucher', JSON.stringify({
+                    voucher: event.voucher,
+                    discount_amount: event.discount_amount
+                }));
+                this.showToastMessage('Voucher applied successfully!');
+            });
+            
+            this.$wire.on('voucher-removed', () => {
+                this.$wire.removeVoucher();
+                // Clear voucher from localStorage
+                localStorage.removeItem('applied_voucher');
+                this.showToastMessage('Voucher removed');
+            });
+            
+            this.$wire.on('voucher-updated', (event) => {
+                this.$wire.voucherUpdated(event);
+            });
+            
+            this.$wire.on('voucher-failed', (event) => {
+                this.showErrorToast(event.message);
             });
              
              // Listen for item added to cart
@@ -40,18 +65,30 @@
                  this.showErrorToast(event.message);
              });
              
-             // Load cart from localStorage
-             this.$wire.on('load-cart-from-storage', () => {
-                 const savedCart = localStorage.getItem('teman_cart');
-                 if (savedCart) {
-                     try {
-                         const cartData = JSON.parse(savedCart);
-                         this.$wire.loadCartFromStorage(cartData);
-                     } catch (e) {
-                         console.error('Failed to load cart from storage:', e);
-                     }
-                 }
-             });
+            // Load cart from localStorage
+            this.$wire.on('load-cart-from-storage', () => {
+                const savedCart = localStorage.getItem('teman_cart');
+                if (savedCart) {
+                    try {
+                        const cartData = JSON.parse(savedCart);
+                        this.$wire.loadCartFromStorage(cartData);
+                    } catch (e) {
+                    }
+                }
+            });
+            
+            // Restore voucher after cart is loaded
+            this.$wire.on('restore-voucher-after-cart-load', () => {
+                const savedVoucher = localStorage.getItem('applied_voucher');
+                if (savedVoucher) {
+                    try {
+                        const voucherData = JSON.parse(savedVoucher);
+                        this.$wire.restoreVoucher(voucherData);
+                    } catch (e) {
+                        localStorage.removeItem('applied_voucher');
+                    }
+                }
+            });
              
              // Persist cart to localStorage
              this.$wire.on('persist-cart', (event) => {
@@ -63,9 +100,27 @@
                  localStorage.removeItem('teman_cart');
              });
              
-            // Initialize cart count from reactive properties
-            this.cartCount = this.$wire.cartCount || 0;
-            this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
+             // Initialize cart count from reactive properties
+             this.cartCount = this.$wire.cartCount || 0;
+             this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
+             
+             // Auto-hide promotion modal after 5 seconds and show bubble if not manually closed
+             this.hidePromotionTimer = setTimeout(() => {
+                 if (this.showPromotionModal) {
+                     this.showPromotionModal = false;
+                     this.promotionBubbleVisible = true;
+                 }
+             }, 5000);
+         },
+         togglePromotionModal() {
+             this.showPromotionModal = !this.showPromotionModal;
+             if (!this.showPromotionModal) {
+                 this.promotionBubbleVisible = true;
+                 // Clear the auto-hide timer if manually closed
+                 if (this.hidePromotionTimer) {
+                     clearTimeout(this.hidePromotionTimer);
+                 }
+             }
          },
          showToastMessage(message) {
              this.toastMessage = message;
@@ -172,8 +227,147 @@
         </div>
     </div>
 
+    <!-- Promotion Modal -->
+    <div x-show="showPromotionModal" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[9999]">
+        
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[80vh] overflow-y-auto shadow-2xl"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="opacity-0 transform scale-95"
+             x-transition:enter-end="opacity-100 transform scale-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100 transform scale-100"
+             x-transition:leave-end="opacity-0 transform scale-95">
+            
+            <!-- Modal Header -->
+            <div class="bg-orange-600 p-6 rounded-t-2xl text-white relative">
+                <!-- Close Button -->
+                <button @click="togglePromotionModal()" 
+                        class="absolute top-4 right-4 text-white/80 hover:text-white transition-colors">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+                
+                <!-- Header Content -->
+                <div class="text-center">
+                    <div class="flex items-center justify-center mb-3 space-x-2">
+                        <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2 2z" />
+                        </svg>
+                        <svg class="w-6 h-6 animate-pulse" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+                        </svg>
+                    </div>
+                    <h2 class="text-2xl font-bold mb-2">🔥 Hot Promotions!</h2>
+                    <p class="text-orange-100">Don't miss out on these amazing deals!</p>
+                </div>
+            </div>
+            
+            <!-- Modal Content -->
+            <div class="p-6">
+                <!-- Voucher Preview -->
+                <div class="mb-6">
+                    <livewire:promo-voucher-claim />
+                </div>
+                
+                <!-- Promotions -->
+                <livewire:active-promotions />
+                
+                <!-- Vouchers Link -->
+                <div class="mt-6 pt-6 border-t border-gray-200 text-center">
+                    <a href="{{ route('vouchers.index') }}" 
+                       class="inline-flex items-center px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-all duration-200 font-medium shadow-lg">
+                        <svg class="w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 7l-.71.71a2 2 0 01-2.83-2.83L7 7zm0 0l5.66 5.66a2 2 0 002.83-2.83L7 7z" />
+                        </svg>
+                        Browse all Vouchers
+                    </a>
+                    <p class="text-sm text-gray-500 mt-2">Discover exclusive discount codes and deals</p>
+                </div>
+            </div>
+            
+            <!-- Modal Footer -->
+            <div class="bg-gray-50 px-6 py-4 rounded-b-2xl flex justify-between items-center">
+                 <p class="text-sm text-gray-600">
+                     <svg class="w-4 h-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                     </svg>
+                     Auto-closes in 5 seconds
+                 </p>
+                <button @click="togglePromotionModal()" 
+                        class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium">
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Promotion Bubble -->
+    <div x-show="promotionBubbleVisible" 
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 transform scale-0"
+         x-transition:enter-end="opacity-100 transform scale-100"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-start="opacity-100 transform scale-100"
+         x-transition:leave-end="opacity-0 transform scale-0"
+         class="fixed bottom-20 left-6 z-50 cursor-pointer"
+         @click="togglePromotionModal()"
+         x-data="{ 
+             animate: false,
+             toggleAnimation() { 
+                 this.animate = true; 
+                 setTimeout(() => this.animate = false, 1000); 
+             }
+         }"
+         @click="toggleAnimation()">
+        
+        <!-- Bubble Container -->
+        <div class="relative">
+            <!-- Pulse Ring -->
+            <div class="absolute inset-0 bg-orange-500/30 rounded-full animate-ping"></div>
+            
+            <!-- Main Bubble -->
+            <div class="relative bg-orange-600 rounded-full p-4 shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-110"
+                 :class="{ 'animate-bounce': animate }">
+                
+                <!-- Icon -->
+                <div class="flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 7l-.71.71a2 2 0 01-2.83-2.83L7 7zm0 0l5.66 5.66a2 2 0 002.83-2.83L7 7z" />
+                    </svg>
+                </div>
+                
+                <!-- Sparkle Effects -->
+                <div class="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                <div class="absolute -bottom-1 -left-1 w-2 h-2 bg-orange-400 rounded-full animate-pulse" style="animation-delay: 0.5s;"></div>
+            </div>
+            
+            <!-- Tooltip -->
+            <div class="absolute right-14 top-1/2 transform -translate-y-1/2 bg-gray-900 text-white px-3 py-1 rounded-lg text-sm whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity">
+                Click for Promotions & Vouchers!
+                <div class="absolute left-full top-1/2 transform -translate-y-1/2 w-0 h-0 border-l-8 border-l-gray-900 border-t-4 border-t-transparent border-b-4 border-b-transparent"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Title -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <div class="text-center mb-8">
+            <h2 class="text-2xl font-bold text-gray-900 mb-2">Our Products</h2>
+            <p class="text-gray-600">Discover our amazing collection</p>
+        </div>
+    </div>
+
     <!-- Products Grid -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
             @forelse($products as $product)
                 <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all duration-300 overflow-hidden group cursor-pointer"
@@ -308,6 +502,10 @@
         :show="$showOrderForm" 
         :cart="$cart" 
         :cartTotal="$cartTotal"
+        :appliedVoucher="$appliedVoucher"
+        :voucherDiscountAmount="$voucherDiscountAmount"
+        :automaticDiscounts="$automaticDiscounts"
+        :finalTotal="$finalTotal"
         wire:key="order-modal-{{ $showOrderForm ? 'open' : 'closed' }}"
     />
 
