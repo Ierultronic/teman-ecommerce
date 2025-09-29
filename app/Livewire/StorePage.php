@@ -18,6 +18,12 @@ class StorePage extends Component
 {
     use WithFileUploads;
 
+    protected $listeners = [
+        'voucher-applied' => 'onVoucherApplied',
+        'voucher-updated' => 'onVoucherUpdated', 
+        'voucher-removed' => 'onVoucherRemoved',
+    ];
+
     public $products;
     public $cart = [];
     public $customerName = '';
@@ -479,7 +485,57 @@ class StorePage extends Component
         try {
             DB::beginTransaction();
 
-            $totalPrice = $this->finalTotal;
+            $discountService = new DiscountService();
+
+            // Convert cart to format expected by DiscountService
+            $cartItems = [];
+            foreach ($this->cart as $cartKey => $item) {
+                $cartItems[] = [
+                    'product_id' => $item['product_id'],
+                    'variant_id' => $item['variant_id'],
+                    'quantity' => $item['quantity'],
+                    'price' => $item['price'],
+                    'total' => $item['price'] * $item['quantity'],
+                ];
+            }
+
+            // Prepare discount data for saving to database
+            $discountData = [];
+
+            // Add applied voucher to discount data
+            if ($this->appliedVoucher && $this->voucherDiscountAmount > 0) {
+                // Ensure voucher is a proper object/model instance
+                $voucher = $this->appliedVoucher;
+                if (is_array($voucher)) {
+                    // Try to find the voucher in database first
+                    if (isset($voucher['id'])) {
+                        $voucherModel = Voucher::find($voucher['id']);
+                        $voucher = $voucherModel ? $voucherModel : (object) $voucher;
+                    } else {
+                        $voucher = (object) $voucher;
+                    }
+                }
+                
+                $discountData[] = (object) [
+                    'voucher' => $voucher,
+                    'discount_amount' => $this->voucherDiscountAmount,
+                ];
+            }
+
+            // Add automatic discounts (promotions, etc.)
+            if ($this->automaticDiscounts > 0) {
+                $automaticDiscountData = $discountService->calculateAutomaticDiscounts($cartItems);
+                foreach ($automaticDiscountData as $discountItem) {
+                    $discountData[] = $discountItem;
+                }
+            }
+
+            // Calculate total discount amount
+            $totalDiscountAmount = $this->voucherDiscountAmount + $this->automaticDiscounts;
+            $finalPrice = $this->cartTotal - $totalDiscountAmount;
+
+            // Ensure final price is not negative
+            $finalPrice = max(0, $finalPrice);
 
             $order = Order::create([
                 'customer_name' => $this->customerName,
@@ -502,11 +558,14 @@ class StorePage extends Component
                 'shipping_country' => $this->shippingCountry,
                 'order_notes' => $this->orderNotes,
                 'same_as_billing' => $this->sameAsBilling,
-                'total_price' => $totalPrice,
+                'subtotal' => $this->cartTotal, // Original total before discounts
+                'total_discount' => $totalDiscountAmount,
+                'total_price' => $finalPrice, // Final total after discounts
                 'status' => 'pending_verification',
                 'payment_method' => $this->paymentMethod,
             ]);
 
+            // Create order items
             foreach ($this->cart as $item) {
                 // First, validate stock availability atomically
                 if ($item['variant_id']) {
@@ -539,6 +598,11 @@ class StorePage extends Component
                 }
             }
 
+            // Apply discounts to order (save to database)
+            if (!empty($discountData)) {
+                $discountService->applyDiscountsToOrder($order, $discountData);
+            }
+
             DB::commit();
 
             // Clear cart and show success
@@ -555,6 +619,9 @@ class StorePage extends Component
                 'orderNotes', 'sameAsBilling', 'paymentMethod'
             ]);
             
+            // Reset discount-related properties
+            $this->reset(['appliedVoucher', 'voucherDiscountAmount', 'automaticDiscounts', 'cartTotal', 'finalTotal']);
+            
             // Redirect based on payment method
             if ($this->paymentMethod === 'fpx') {
                 return redirect()->route('payment.fpx', ['orderId' => $order->id]);
@@ -565,6 +632,7 @@ class StorePage extends Component
         } catch (\Exception $e) {
             DB::rollBack();
             $this->addError('order', 'Failed to place order: ' . $e->getMessage());
+            Log::error('Order placement error: ' . $e->getMessage());
         }
     }
 
@@ -708,7 +776,22 @@ class StorePage extends Component
             return;
         }
         
-        $this->appliedVoucher = $voucherData['voucher'];
+        // Convert stored voucher array back to Voucher model instance
+        $voucherArray = $voucherData['voucher'];
+        if (is_array($voucherArray) && isset($voucherArray['id'])) {
+            // Try to find the voucher in database
+            $voucherModel = Voucher::find($voucherArray['id']);
+            if ($voucherModel) {
+                $this->appliedVoucher = $voucherModel;
+            } else {
+                // If voucher not found in database, create a temporary object
+                $this->appliedVoucher = (object) $voucherArray;
+            }
+        } else {
+            // Fallback: store as object if it's already converted
+            $this->appliedVoucher = is_object($voucherArray) ? $voucherArray : (object) $voucherArray;
+        }
+        
         $this->voucherDiscountAmount = $voucherData['discount_amount'];
         
         // Only recalculate if cart is not empty
@@ -722,19 +805,30 @@ class StorePage extends Component
         $this->dispatch('clear-cart-storage');
     }
 
-    public function applyVoucher($voucherData)
+
+    public function onVoucherApplied($data)
     {
-        // Check if voucherData is valid and has required keys
-        if (!$voucherData || !is_array($voucherData)) {
-            return;
-        }
+        $this->appliedVoucher = $data['voucher'];
+        $this->voucherDiscountAmount = $data['discount_amount'];
+        $this->calculateDiscountsAndFinalTotal();
         
-        if (!isset($voucherData['voucher']) || !isset($voucherData['discount_amount'])) {
-            return;
-        }
+        // Dispatch success event
+        $this->dispatch('cart-updated');
+    }
+
+    public function onVoucherUpdated($data)
+    {
+        $this->voucherDiscountAmount = $data['discount_amount'];
+        $this->calculateDiscountsAndFinalTotal();
         
-        $this->appliedVoucher = $voucherData['voucher'];
-        $this->voucherDiscountAmount = $voucherData['discount_amount'];
+        // Dispatch success event
+        $this->dispatch('cart-updated');
+    }
+
+    public function onVoucherRemoved()
+    {
+        $this->appliedVoucher = null;
+        $this->voucherDiscountAmount = 0.00;
         $this->calculateDiscountsAndFinalTotal();
         
         // Dispatch success event
@@ -751,20 +845,6 @@ class StorePage extends Component
         $this->dispatch('cart-updated');
     }
 
-    public function voucherUpdated($discountAmount)
-    {
-        // Handle both array and direct value formats
-        if (is_array($discountAmount) && isset($discountAmount['discount_amount'])) {
-            $this->voucherDiscountAmount = $discountAmount['discount_amount'];
-        } else {
-            $this->voucherDiscountAmount = $discountAmount;
-        }
-        
-        $this->calculateDiscountsAndFinalTotal();
-        
-        // Dispatch success event
-        $this->dispatch('cart-updated');
-    }
 
     public function quickAddToCart($productId)
     {

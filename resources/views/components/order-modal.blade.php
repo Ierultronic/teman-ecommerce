@@ -68,7 +68,7 @@
                     <!-- Voucher Discount (if applied) -->
                     @if($appliedVoucher && abs($voucherDiscountAmount) > 0.01)
                         <div class="flex justify-between items-center text-sm text-green-600">
-                            <span>Voucher Discount ({{ $appliedVoucher->code }}):</span>
+                            <span>Voucher Discount ({{ is_array($appliedVoucher) ? $appliedVoucher['code'] : $appliedVoucher->code }}):</span>
                             <span>-RM{{ number_format($voucherDiscountAmount, 2) }}</span>
                         </div>
                     @endif

@@ -19,9 +19,8 @@
                 this.cartTotal = parseFloat(this.$wire.cartTotal) || 0;
             });
             
-            // Listen for voucher events
+            // Listen for voucher events - handled by Livewire listeners in component
             this.$wire.on('voucher-applied', (event) => {
-                this.$wire.applyVoucher(event);
                 // Persist voucher to localStorage
                 localStorage.setItem('applied_voucher', JSON.stringify({
                     voucher: event.voucher,
@@ -31,14 +30,18 @@
             });
             
             this.$wire.on('voucher-removed', () => {
-                this.$wire.removeVoucher();
                 // Clear voucher from localStorage
                 localStorage.removeItem('applied_voucher');
                 this.showToastMessage('Voucher removed');
             });
             
             this.$wire.on('voucher-updated', (event) => {
-                this.$wire.voucherUpdated(event);
+                // Update localStorage
+                const storedVoucher = JSON.parse(localStorage.getItem('applied_voucher') || '{}');
+                if (storedVoucher.voucher) {
+                    storedVoucher.discount_amount = event.discount_amount;
+                    localStorage.setItem('applied_voucher', JSON.stringify(storedVoucher));
+                }
             });
             
             this.$wire.on('voucher-failed', (event) => {
