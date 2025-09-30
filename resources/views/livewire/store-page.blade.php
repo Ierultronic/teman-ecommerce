@@ -275,10 +275,7 @@
             
             <!-- Modal Content -->
             <div class="p-6">
-                <!-- Voucher Preview -->
-                <div class="mb-6">
-                    <livewire:promo-voucher-claim />
-                </div>
+                
                 
                 <!-- Promotions -->
                 <livewire:active-promotions />
