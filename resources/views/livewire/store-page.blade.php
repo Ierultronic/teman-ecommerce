@@ -276,7 +276,6 @@
             <!-- Modal Content -->
             <div class="p-6">
                 
-                
                 <!-- Promotions -->
                 <livewire:active-promotions />
                 

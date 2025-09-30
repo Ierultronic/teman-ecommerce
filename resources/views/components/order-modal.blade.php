@@ -259,18 +259,18 @@
                     <div class="space-y-3">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                             <!-- FPX Payment Option -->
-                            <label class="relative cursor-pointer">
-                                <input type="radio" wire:model="paymentMethod" value="fpx" class="sr-only peer" required>
-                                <div class="p-4 border-2 border-gray-200 rounded-lg peer-checked:border-green-500 peer-checked:bg-green-50 hover:border-green-300 transition-all">
+                            <label class="relative cursor-not-allowed opacity-50">
+                                <input type="radio" wire:model="paymentMethod" value="fpx" class="sr-only peer" disabled>
+                                <div class="p-4 border-2 border-gray-200 rounded-lg bg-gray-100">
                                     <div class="flex items-center space-x-3">
                                         <div class="flex-shrink-0">
-                                            <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
                                             </svg>
                                         </div>
                                         <div>
-                                            <div class="font-medium text-gray-900">FPX Online Banking</div>
-                                            <div class="text-sm text-gray-600">Pay with your bank account</div>
+                                            <div class="font-medium text-gray-500">FPX Online Banking</div>
+                                            <div class="text-sm text-gray-400">Currently unavailable</div>
                                         </div>
                                     </div>
                                 </div>
