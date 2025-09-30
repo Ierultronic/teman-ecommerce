@@ -125,6 +125,19 @@ class Discount extends Model
     }
 
     /**
+     * Increment usage count
+     */
+    public function incrementUsage(): void
+    {
+        $this->increment('used_count');
+
+        // Check if discount should be marked as expired
+        if ($this->usage_limit && $this->fresh()->used_count >= $this->usage_limit) {
+            $this->update(['status' => 'expired']);
+        }
+    }
+
+    /**
      * Scope for active discounts
      */
     public function scopeActive($query)

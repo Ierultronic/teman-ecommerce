@@ -171,11 +171,13 @@ class DiscountService
                 $discountType = $item->discount->type;
                 $discountValue = $item->discount->value;
                 $discountName = $item->discount->name;
+                $discountable->incrementUsage();
             } elseif (isset($item->promotion)) {
                 $discountable = $item->promotion;
                 $discountType = 'fixed'; // Promotions are always handled as fixed amounts
                 $discountValue = 0.00; // Will be the calculated amount
                 $discountName = $item->promotion->title;
+                // Note: Promotions don't have usage tracking, so no incrementUsage() call
             }
 
             $discountAmount = $item->discount_amount;

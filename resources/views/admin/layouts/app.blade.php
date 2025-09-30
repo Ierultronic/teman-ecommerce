@@ -46,18 +46,30 @@
                 transform: translateX(0);
             }
         }
-        /* Ensure consistent sidebar width */
+        /* Ensure consistent sidebar width and sticky positioning */
         #sidebar {
             width: 16rem; /* 256px - equivalent to w-64 */
             min-width: 16rem;
             max-width: 16rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        
+        /* Ensure main content has proper margin for fixed sidebar */
+        @media (min-width: 768px) {
+            .main-content {
+                margin-left: 16rem; /* 256px - same as sidebar width */
+            }
         }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="min-h-screen flex">
         <!-- Sidebar -->
-        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 bg-white shadow-lg sidebar-transition sidebar-closed md:relative md:translate-x-0">
+        <div id="sidebar" class="fixed inset-y-0 left-0 z-50 bg-white shadow-lg sidebar-transition sidebar-closed md:translate-x-0">
             <!-- Logo and Brand -->
             <div class="flex items-center justify-between p-6 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
@@ -143,7 +155,7 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col md:ml-0">
+        <div class="flex-1 flex flex-col main-content">
             <!-- Top Bar -->
             <div class="bg-white shadow-sm border-b border-gray-200">
                 <div class="flex items-center justify-between px-4 py-4 md:px-6">
