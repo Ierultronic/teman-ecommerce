@@ -27,6 +27,10 @@ class BrandingSettings extends Component
         'youtube' => '',
     ];
 
+    public $showFeedbackModal = false;
+    public $feedbackMessage = '';
+    public $feedbackType = 'success';
+
     protected $rules = [
         'shop_name' => 'required|string|max:255',
         'description' => 'nullable|string|max:500',
@@ -95,7 +99,11 @@ class BrandingSettings extends Component
         $this->logo = null;
         $this->favicon = null;
 
-        session()->flash('success', 'Branding settings updated successfully!');
+        // Show feedback modal
+        $this->feedbackMessage = 'Branding settings updated successfully! 
+        Please refresh the page to see the changes.'; 
+        $this->feedbackType = 'success';
+        $this->showFeedbackModal = true;
     }
 
     public function removeLogo()
@@ -109,7 +117,10 @@ class BrandingSettings extends Component
         $settings->update(['logo_path' => null]);
         $this->current_logo_url = asset('images/logo.png');
         
-        session()->flash('success', 'Logo removed successfully!');
+        // Show feedback modal
+        $this->feedbackMessage = 'Logo removed successfully!';
+        $this->feedbackType = 'success';
+        $this->showFeedbackModal = true;
     }
 
     public function removeFavicon()
@@ -123,7 +134,17 @@ class BrandingSettings extends Component
         $settings->update(['favicon_path' => null]);
         $this->current_favicon_url = asset('images/logo.png');
         
-        session()->flash('success', 'Favicon removed successfully!');
+        // Show feedback modal
+        $this->feedbackMessage = 'Favicon removed successfully!';
+        $this->feedbackType = 'success';
+        $this->showFeedbackModal = true;
+    }
+
+    public function closeFeedbackModal()
+    {
+        $this->showFeedbackModal = false;
+        $this->feedbackMessage = '';
+        $this->feedbackType = 'success';
     }
 
     public function render()
