@@ -40,6 +40,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('branding', function () {
         return view('admin.branding');
     })->name('branding.index');
+    
+    // QR Payment settings
+    Route::get('qr-payment-settings', function () {
+        return view('admin.qr-payment-settings');
+    })->name('qr-payment-settings.index');
 });
 
 // Order placement (public)

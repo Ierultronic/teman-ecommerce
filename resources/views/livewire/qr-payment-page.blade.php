@@ -59,7 +59,11 @@
                         <!-- QR Code -->
                         <div class="bg-white border-2 border-gray-200 rounded-lg p-8 mb-4 inline-block">
                             <div class="w-48 h-48 bg-gray-100 rounded-lg flex items-center justify-center overflow-hidden">
-                                @if(file_exists(public_path('images/qr.jpeg')))
+                                @if($qrImageUrl)
+                                    <img src="{{ $qrImageUrl }}" 
+                                         alt="QR Code" 
+                                         class="w-full h-full object-contain rounded-lg">
+                                @elseif(file_exists(public_path('images/qr.jpeg')))
                                     <img src="{{ asset('images/qr.jpeg') }}" 
                                          alt="QR Code" 
                                          class="w-full h-full object-contain rounded-lg">

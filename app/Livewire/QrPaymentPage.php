@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Models\Order;
+use App\Models\WebsiteSettings;
 use App\Services\ReceiptProcessingService;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
@@ -119,12 +120,13 @@ class QrPaymentPage extends Component
 
     public function generateQrData()
     {
-        // Generate QR data for Malaysian bank account
-        // This would typically include bank account details and amount
+        $settings = WebsiteSettings::current();
+        
+        // Generate QR data using dynamic settings from database
         $qrData = [
-            'bank' => 'Maybank',
-            'account' => '1234567890',
-            'name' => 'Teman Ecommerce',
+            'bank' => $settings->qr_bank_name ?? 'Maybank',
+            'account' => $settings->qr_account_number ?? '1234567890',
+            'name' => $settings->qr_account_holder_name ?? 'Teman Ecommerce',
             'amount' => $this->order->total_price,
             'reference' => 'ORDER-' . $this->order->id,
         ];
@@ -134,10 +136,12 @@ class QrPaymentPage extends Component
 
     public function render()
     {
+        $settings = WebsiteSettings::current();
         $qrData = $this->generateQrData();
         
         return view('livewire.qr-payment-page', [
-            'qrData' => $qrData
+            'qrData' => $qrData,
+            'qrImageUrl' => $settings->qr_image_url
         ]);
     }
 }

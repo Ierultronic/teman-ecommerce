@@ -19,6 +19,10 @@ class WebsiteSettings extends Model
         'contact_phone',
         'address',
         'social_links',
+        'qr_image_path',
+        'qr_bank_name',
+        'qr_account_number',
+        'qr_account_holder_name',
     ];
 
     protected $casts = [
@@ -63,6 +67,18 @@ class WebsiteSettings extends Model
     }
 
     /**
+     * Get the QR image URL
+     */
+    public function getQrImageUrlAttribute()
+    {
+        if ($this->qr_image_path && Storage::exists($this->qr_image_path)) {
+            return Storage::url($this->qr_image_path);
+        }
+        
+        return asset('images/qr.jpeg');
+    }
+
+    /**
      * Update settings
      */
     public function updateSettings(array $data)
@@ -78,6 +94,11 @@ class WebsiteSettings extends Model
             unset($data['favicon']);
         }
 
+        if (isset($data['qr_image'])) {
+            $data['qr_image_path'] = $this->handleFileUpload($data['qr_image'], 'qr-images');
+            unset($data['qr_image']);
+        }
+
         return $this->update($data);
     }
 
@@ -91,8 +112,8 @@ class WebsiteSettings extends Model
         }
 
         // Delete old file if exists
-        if ($this->logo_path && Storage::exists($this->logo_path)) {
-            Storage::delete($this->logo_path);
+        if ($this->qr_image_path && Storage::exists($this->qr_image_path)) {
+            Storage::delete($this->qr_image_path);
         }
 
         // Store new file

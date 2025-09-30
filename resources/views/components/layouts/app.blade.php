@@ -6,7 +6,6 @@
     <link rel="icon" type="image/png" href="{{ $websiteSettings->favicon_url }}">
     <title>{{ $websiteSettings->shop_name }} - Payment</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @livewireStyles
 </head>
 <body class="bg-gray-50">

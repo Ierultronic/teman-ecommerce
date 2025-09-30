@@ -7,7 +7,6 @@
     <link rel="icon" type="image/png" href="{{ $websiteSettings->favicon_url }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @livewireStyles
     <script>
         tailwind.config = {
@@ -133,6 +132,11 @@
                                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.branding.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                                 <i data-feather="settings" class="w-4 h-4 mr-3"></i>
                                 Branding
+                            </a>
+                            <a href="{{ route('admin.qr-payment-settings.index') }}" 
+                               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.qr-payment-settings.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                <i data-feather="credit-card" class="w-4 h-4 mr-3"></i>
+                                QR Payment
                             </a>
                         </div>
                     </div>
