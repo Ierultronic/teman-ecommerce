@@ -72,6 +72,24 @@ class Promotion extends Model
         return true;
     }
 
+    /**
+     * Check if promotion is applicable to cart based on minimum amount
+     */
+    public function isApplicableToCart(float $cartTotal): bool
+    {
+        // Check if promotion is active
+        if (!$this->isActive()) {
+            return false;
+        }
+
+        // Check minimum amount requirement
+        if ($this->minimum_amount && $cartTotal < $this->minimum_amount) {
+            return false;
+        }
+
+        return true;
+    }
+
 
 
 
