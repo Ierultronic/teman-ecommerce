@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Panel') - TEMAN</title>
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
+    <title>@yield('title', 'Admin Panel') - {{ $websiteSettings->shop_name }}</title>
+    <link rel="icon" type="image/png" href="{{ $websiteSettings->favicon_url }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -73,9 +73,9 @@
             <!-- Logo and Brand -->
             <div class="flex items-center justify-between p-6 border-b border-gray-200">
                 <div class="flex items-center space-x-3">
-                    <img src="{{ asset('images/logo.png') }}" alt="TEMAN Logo" class="w-10 h-10 rounded-lg">
+                    <img src="{{ $websiteSettings->logo_url }}" alt="{{ $websiteSettings->shop_name }} Logo" class="w-10 h-10 rounded-lg">
                     <div>
-                        <h1 class="text-xl font-bold text-gray-900">TEMAN</h1>
+                        <h1 class="text-xl font-bold text-gray-900">{{ $websiteSettings->shop_name }}</h1>
                         <p class="text-sm text-gray-500">Admin Panel</p>
                     </div>
                 </div>
@@ -121,6 +121,18 @@
                                class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.promotions.index') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
                                 <i data-feather="gift" class="w-4 h-4 mr-3"></i>
                                 Promotions
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Section -->
+                    <div class="mt-4">
+                        <p class="px-3 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Settings</p>
+                        <div class="space-y-1 ml-2">
+                            <a href="{{ route('admin.branding.index') }}" 
+                               class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.branding.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }}">
+                                <i data-feather="settings" class="w-4 h-4 mr-3"></i>
+                                Branding
                             </a>
                         </div>
                     </div>

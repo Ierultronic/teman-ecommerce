@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="icon" type="image/png" href="{{ asset('images/logo.png') }}">
-    <title>Teman - Payment</title>
+    <link rel="icon" type="image/png" href="{{ $websiteSettings->favicon_url }}">
+    <title>{{ $websiteSettings->shop_name }} - Payment</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     @livewireStyles
@@ -17,8 +17,8 @@
                 <div class="flex justify-between items-center py-6">
                     <div class="flex items-center">
                         <!-- Store Logo -->
-                        <img src="/images/logo.png" alt="Store Logo" class="w-10 h-10 mr-3 rounded-lg">
-                        <h1 class="text-3xl font-bold text-gray-900">Teman</h1>
+                        <img src="{{ $websiteSettings->logo_url }}" alt="{{ $websiteSettings->shop_name }} Logo" class="w-10 h-10 mr-3 rounded-lg">
+                        <h1 class="text-3xl font-bold text-gray-900">{{ $websiteSettings->shop_name }}</h1>
                     </div>
                     <div class="flex items-center space-x-4">
                         <a href="{{ route('store.index') }}" class="text-gray-600 hover:text-gray-900">Back to Store</a>

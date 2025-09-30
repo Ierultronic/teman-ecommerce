@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Order;
+use App\Models\WebsiteSettings;
 use Carbon\Carbon;
 
 class EInvoiceService
@@ -12,6 +13,12 @@ class EInvoiceService
      */
     public function generateEInvoiceData(Order $order): array
     {
+        // Get website settings for dynamic address
+        $websiteSettings = WebsiteSettings::current();
+        
+        // Parse address from website settings if available
+        $websiteAddress = $this->parseAddress($websiteSettings->address);
+        
         $invoiceData = [
             'invoice_number' => $this->generateInvoiceNumber($order),
             'invoice_date' => Carbon::now()->format('Y-m-d'),
@@ -20,20 +27,20 @@ class EInvoiceService
             
             // Seller Information (Your Business)
             'seller' => [
-                'name' => config('einvoice.seller.name', config('app.name', 'Your Business Name')),
+                'name' => $websiteSettings->shop_name ?: config('einvoice.seller.name', config('app.name', 'Your Business Name')),
                 'registration_number' => config('einvoice.seller.registration_number', ''),
                 'tax_identification_number' => config('einvoice.seller.tax_identification_number', ''),
                 'address' => [
-                    'line1' => config('einvoice.seller.address.line1', ''),
-                    'line2' => config('einvoice.seller.address.line2', ''),
-                    'city' => config('einvoice.seller.address.city', ''),
-                    'state' => config('einvoice.seller.address.state', ''),
-                    'postal_code' => config('einvoice.seller.address.postal_code', ''),
-                    'country' => config('einvoice.seller.address.country', 'Malaysia'),
+                    'line1' => $websiteAddress['line1'] ?: config('einvoice.seller.address.line1', ''),
+                    'line2' => $websiteAddress['line2'] ?: config('einvoice.seller.address.line2', ''),
+                    'city' => $websiteAddress['city'] ?: config('einvoice.seller.address.city', ''),
+                    'state' => $websiteAddress['state'] ?: config('einvoice.seller.address.state', ''),
+                    'postal_code' => $websiteAddress['postal_code'] ?: config('einvoice.seller.address.postal_code', ''),
+                    'country' => $websiteAddress['country'] ?: config('einvoice.seller.address.country', 'Malaysia'),
                 ],
                 'contact' => [
-                    'phone' => config('einvoice.seller.contact.phone', ''),
-                    'email' => config('einvoice.seller.contact.email', ''),
+                    'phone' => $websiteSettings->contact_phone ?: config('einvoice.seller.contact.phone', ''),
+                    'email' => $websiteSettings->contact_email ?: config('einvoice.seller.contact.email', ''),
                 ]
             ],
             
@@ -89,6 +96,58 @@ class EInvoiceService
         return $invoiceData;
     }
     
+    /**
+     * Parse address string into components
+     */
+    private function parseAddress(?string $address): array
+    {
+        if (!$address) {
+            return [
+                'line1' => '',
+                'line2' => '',
+                'city' => '',
+                'state' => '',
+                'postal_code' => '',
+                'country' => 'Malaysia',
+            ];
+        }
+
+        // Split address by common delimiters
+        $parts = preg_split('/[,\n\r]+/', $address);
+        $parts = array_map('trim', $parts);
+        $parts = array_filter($parts); // Remove empty parts
+
+        $result = [
+            'line1' => '',
+            'line2' => '',
+            'city' => '',
+            'state' => '',
+            'postal_code' => '',
+            'country' => 'Malaysia',
+        ];
+
+        if (count($parts) >= 1) {
+            $result['line1'] = $parts[0];
+        }
+        if (count($parts) >= 2) {
+            $result['line2'] = $parts[1];
+        }
+        if (count($parts) >= 3) {
+            $result['city'] = $parts[2];
+        }
+        if (count($parts) >= 4) {
+            $result['state'] = $parts[3];
+        }
+        if (count($parts) >= 5) {
+            $result['postal_code'] = $parts[4];
+        }
+        if (count($parts) >= 6) {
+            $result['country'] = $parts[5];
+        }
+
+        return $result;
+    }
+
     /**
      * Generate unique invoice number
      */

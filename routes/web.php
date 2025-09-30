@@ -35,6 +35,11 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::get('promotions', function () {
         return view('admin.promotions');
     })->name('promotions.index');
+    
+    // Branding settings
+    Route::get('branding', function () {
+        return view('admin.branding');
+    })->name('branding.index');
 });
 
 // Order placement (public)
