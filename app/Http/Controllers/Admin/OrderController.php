@@ -13,6 +13,9 @@ use Illuminate\Support\Facades\View;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Auth;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\OrderStatusUpdateMail;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class OrderController extends Controller
 {
@@ -54,6 +57,20 @@ class OrderController extends Controller
 
         $order->update(['status' => $request->status]);
 
+        // Send email to customer if status is shipped or cancelled
+        if (in_array($request->status, ['shipped', 'cancelled'])) {
+            try {
+                Mail::to($order->customer_email)->send(new OrderStatusUpdateMail($order, $request->status));
+            } catch (\Exception $e) {
+                Log::error('Failed to send order status update email', [
+                    'order_id' => $order->id,
+                    'customer_email' => $order->customer_email,
+                    'new_status' => $request->status,
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
         return Redirect::back()->with('success', 'Order status updated successfully!');
     }
 
@@ -78,6 +95,17 @@ class OrderController extends Controller
                 'payment_verified_by' => Auth::id(),
             ]);
             
+            // Send cancellation email to customer
+            try {
+                Mail::to($order->customer_email)->send(new OrderStatusUpdateMail($order, 'cancelled'));
+            } catch (\Exception $e) {
+                Log::error('Failed to send order status update email (cancelled)', [
+                    'order_id' => $order->id,
+                    'customer_email' => $order->customer_email,
+                    'new_status' => 'cancelled',
+                    'error' => $e->getMessage()
+                ]);
+            }
             $message = 'Payment rejected. Order cancelled.';
         }
 
