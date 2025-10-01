@@ -2,9 +2,12 @@
 
 namespace App\Livewire;
 
+use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use App\Models\WebsiteSettings;
 use App\Services\ReceiptProcessingService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -67,11 +70,23 @@ class QrPaymentPage extends Component
 
             $this->showSuccess = true;
             
+            // Send order confirmation email
+            try {
+                Mail::to($this->order->customer_email)->send(new OrderConfirmationMail($this->order));
+            } catch (\Exception $e) {
+                // Log email error but don't fail the receipt upload
+                Log::error('Failed to send order confirmation email', [
+                    'order_id' => $this->order->id,
+                    'customer_email' => $this->order->customer_email,
+                    'error' => $e->getMessage()
+                ]);
+            }
+            
             $message = 'Receipt uploaded successfully!';
             if ($result['reference_id']) {
                 $message .= ' Reference ID automatically extracted: ' . $result['reference_id'];
             }
-            $message .= ' We will verify your payment shortly.';
+            $message .= ' We will verify your payment shortly. A confirmation email has been sent to ' . $this->order->customer_email . '.';
             
             session()->flash('message', $message);
             

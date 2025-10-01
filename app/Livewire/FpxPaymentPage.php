@@ -2,8 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 
 class FpxPaymentPage extends Component
@@ -63,11 +66,23 @@ class FpxPaymentPage extends Component
             'payment_verified_at' => now(),
         ]);
         
+        // Send order confirmation email
+        try {
+            Mail::to($this->order->customer_email)->send(new OrderConfirmationMail($this->order));
+        } catch (\Exception $e) {
+            // Log email error but don't fail the payment
+            Log::error('Failed to send order confirmation email', [
+                'order_id' => $this->order->id,
+                'customer_email' => $this->order->customer_email,
+                'error' => $e->getMessage()
+            ]);
+        }
+        
         $this->showSuccess = true;
     }
 
     public function render()
     {
-        return view('livewire.fpx-payment-page')->layout('components.layouts.app');
+        return view('livewire.fpx-payment-page');
     }
 }
