@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Mail\AdminOrderNotificationMail;
 use App\Mail\OrderConfirmationMail;
 use App\Models\Order;
 use Illuminate\Support\Facades\Http;
@@ -66,7 +67,7 @@ class FpxPaymentPage extends Component
             'payment_verified_at' => now(),
         ]);
         
-        // Send order confirmation email
+        // Send order confirmation email to customer
         try {
             Mail::to($this->order->customer_email)->send(new OrderConfirmationMail($this->order));
         } catch (\Exception $e) {
@@ -74,6 +75,21 @@ class FpxPaymentPage extends Component
             Log::error('Failed to send order confirmation email', [
                 'order_id' => $this->order->id,
                 'customer_email' => $this->order->customer_email,
+                'error' => $e->getMessage()
+            ]);
+        }
+        
+        // Send admin notification email
+        try {
+            $adminEmail = config('mail.from.address');
+            if ($adminEmail) {
+                Mail::to($adminEmail)->send(new AdminOrderNotificationMail($this->order));
+            }
+        } catch (\Exception $e) {
+            // Log admin email error but don't fail the payment
+            Log::error('Failed to send admin notification email', [
+                'order_id' => $this->order->id,
+                'admin_email' => config('mail.from.address'),
                 'error' => $e->getMessage()
             ]);
         }
