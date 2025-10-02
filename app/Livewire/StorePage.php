@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -902,7 +903,7 @@ class StorePage extends Component
         $this->validateQuantitiesAgainstStock();
         
         // Ensure categories are always loaded with counts for each render
-        $categories = \App\Models\Category::active()->ordered()->withCount('activeProducts')->get();
+        $categories = Category::active()->ordered()->withCount('activeProducts')->get();
         
         return view('livewire.store-page', [
             'categories' => $categories

@@ -107,7 +107,7 @@ class CustomerVouchers extends Component
         $this->resetPage();
     }
 
-    public function getHumanReadableTimeLeft($endTime)
+    public function getCountdownTimeLeft($endTime)
     {
         $now = now();
         $diffInMinutes = $now->diffInMinutes($endTime, false);

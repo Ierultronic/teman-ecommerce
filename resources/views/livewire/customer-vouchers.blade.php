@@ -110,7 +110,7 @@
                             <!-- Expiry Badge -->
                             @if($voucher->ends_at)
                                 <div class="absolute top-3 right-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-medium shadow-sm">
-                                    {{ $this->getHumanReadableTimeLeft($voucher->ends_at) }}
+                                    {{ $this->getCountdownTimeLeft($voucher->ends_at) }}
                                 </div>
                             @endif
                             
