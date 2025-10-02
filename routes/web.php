@@ -14,11 +14,16 @@ Route::get('/vouchers', App\Livewire\CustomerVouchers::class)->name('vouchers.in
 Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
+    // Custom category routes (must come before resource route)
+    Route::patch('categories/{slug}/restore', [App\Http\Controllers\Admin\CategoryController::class, 'restore'])->name('categories.restore');
+    Route::delete('categories/{slug}/force-delete', [App\Http\Controllers\Admin\CategoryController::class, 'forceDelete'])->name('categories.force-delete');
+    
     // Custom product routes (must come before resource route)
     Route::patch('products/{id}/restore', [App\Http\Controllers\Admin\ProductController::class, 'restore'])->name('products.restore');
     Route::delete('products/{id}/force-delete', [App\Http\Controllers\Admin\ProductController::class, 'forceDelete'])->name('products.force-delete');
     
     // Resource routes
+    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class)->except(['create', 'store']);
     Route::patch('orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');

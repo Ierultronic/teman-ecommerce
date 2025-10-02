@@ -5,13 +5,6 @@
 @section('page-title', 'Order Details')
 
 @section('content')
-@if(session('success'))
-    <div class="mb-6 bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg flex items-center">
-        <i data-feather="check-circle" class="w-5 h-5 mr-2 text-green-600"></i>
-        {{ session('success') }}
-    </div>
-@endif
-
 <!-- Order Header -->
 <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
     <div class="px-4 py-5 sm:px-6">

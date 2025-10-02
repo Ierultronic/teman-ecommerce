@@ -189,47 +189,6 @@
         <span x-text="toastMessage"></span>
     </div>
 
-    <!-- Success Message -->
-    <div x-data="{ show: false, message: '', orderId: '' }" 
-         x-show="show" 
-         x-on:order-placed.window="show = true; message = $event.detail.message; orderId = $event.detail.orderId; setTimeout(() => show = false, 15000)"
-         class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6"
-         x-transition:enter="transition ease-out duration-500"
-         x-transition:enter-start="opacity-0 transform -translate-y-4"
-         x-transition:enter-end="opacity-100 transform translate-y-0"
-         x-transition:leave="transition ease-in duration-300"
-         x-transition:leave-start="opacity-100 transform translate-y-0"
-         x-transition:leave-end="opacity-0 transform -translate-y-4">
-        
-        <div class="bg-green-50 border border-green-200 rounded-xl p-6 shadow-sm">
-            <div class="flex items-start space-x-4">
-                <div class="flex-shrink-0">
-                    <svg class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                </div>
-                <div class="flex-1">
-                    <h3 class="text-xl font-semibold text-green-800 mb-2">Order Confirmed!</h3>
-                    <p class="text-green-700 mb-4" x-text="message"></p>
-                    <div class="bg-green-100 border border-green-300 rounded-lg p-4 mb-4" x-show="orderId">
-                        <p class="text-sm text-green-800 font-medium">Order ID: <span class="font-mono text-green-900 bg-green-200 px-3 py-1 rounded-lg" x-text="orderId"></span></p>
-                        <p class="text-xs text-green-600 mt-2">Please save this reference number for tracking your order</p>
-                    </div>
-                    <div class="text-sm text-green-600 space-y-1">
-                        <p>• You will receive an email confirmation shortly</p>
-                        <p>• Our team will process your order within 24 hours</p>
-                        <p>• Use the Order ID above to track your order status</p>
-                    </div>
-                </div>
-                <button @click="show = false" class="text-green-400 hover:text-green-600 transition-colors">
-                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Promotion Modal -->
     <div x-show="showPromotionModal" 
          x-transition:enter="transition ease-out duration-300"
@@ -364,6 +323,27 @@
             <p class="text-gray-600">Discover our amazing collection</p>
         </div>
     </div>
+
+    <!-- Category Filter -->
+    @if($categories && $categories->count() > 0)
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+        <div class="bg-white rounded-lg shadow-sm p-4">
+            <div class="flex items-center space-x-2 overflow-x-auto">
+                <button wire:click="filterByCategory(null)"
+                        class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $selectedCategory === null ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                    All Products
+                </button>
+                @foreach($categories as $category)
+                    <button wire:click="filterByCategory({{ $category->id }})"
+                            class="flex-shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors {{ $selectedCategory == $category->id ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                        {{ $category->name }}
+                        <span class="ml-1 text-xs opacity-75">({{ $category->active_products_count }})</span>
+                    </button>
+                @endforeach
+            </div>
+        </div>
+    </div>
+    @endif
 
     <!-- Products Grid -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
@@ -508,37 +488,4 @@
         wire:key="order-modal-{{ $showOrderForm ? 'open' : 'closed' }}"
     />
 
-    <!-- Bottom Toast Notification -->
-    <div x-data="{ show: false, message: '', orderId: '' }" 
-         x-show="show" 
-         x-on:order-placed.window="show = true; message = $event.detail.message; orderId = $event.detail.orderId; setTimeout(() => show = false, 10000)"
-         class="fixed bottom-20 left-1/2 transform -translate-x-1/2 bg-white border border-green-200 text-gray-800 px-8 py-6 rounded-xl shadow-2xl z-50 max-w-lg w-full mx-4"
-         x-transition:enter="transition ease-out duration-500"
-         x-transition:enter-start="opacity-0 transform translate-y-full scale-95"
-         x-transition:enter-end="opacity-100 transform translate-y-0 scale-100"
-         x-transition:leave="transition ease-in duration-300"
-         x-transition:leave-start="opacity-100 transform translate-y-0 scale-100"
-         x-transition:leave-end="opacity-0 transform translate-y-full scale-95">
-        
-        <div class="text-center">
-            <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
-                <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                </svg>
-            </div>
-            <h3 class="text-lg font-medium text-gray-900 mb-2">Thank You!</h3>
-            <p class="text-sm text-gray-600 mb-3" x-text="message"></p>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-3 mb-4" x-show="orderId">
-                <p class="text-xs text-green-700 font-medium">Order ID: <span class="font-mono text-green-800" x-text="orderId"></span></p>
-                <p class="text-xs text-green-600 mt-1">Please save this for your records</p>
-            </div>
-            <div class="text-xs text-gray-500 mb-4">
-                <p>We'll send you an email confirmation shortly.</p>
-                <p>You can track your order status using the Order ID above.</p>
-            </div>
-            <button @click="show = false" class="w-full bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors text-sm font-medium">
-                Continue Shopping
-            </button>
-        </div>
-    </div>
 </div>

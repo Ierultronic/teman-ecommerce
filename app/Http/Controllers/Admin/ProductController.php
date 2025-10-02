@@ -55,13 +55,14 @@ class ProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'category_id' => 'nullable|exists:categories,id',
             'variants' => 'required|array|min:1',
             'variants.*.variant_name' => 'required|string|max:255',
             'variants.*.stock' => 'required|integer|min:0',
             'variants.*.price' => 'nullable|numeric|min:0',
         ]);
 
-        $data = $request->only(['name', 'description', 'price']);
+        $data = $request->only(['name', 'description', 'price', 'category_id']);
         $data['created_by'] = auth()->id();
 
         if ($request->hasFile('image')) {
@@ -108,13 +109,14 @@ class ProductController extends Controller
             'description' => 'required|string',
             'price' => 'required|numeric|min:0',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'category_id' => 'nullable|exists:categories,id',
             'variants' => 'required|array|min:1',
             'variants.*.variant_name' => 'required|string|max:255',
             'variants.*.stock' => 'required|integer|min:0',
             'variants.*.price' => 'nullable|numeric|min:0',
         ]);
 
-        $data = $request->only(['name', 'description', 'price']);
+        $data = $request->only(['name', 'description', 'price', 'category_id']);
 
         if ($request->hasFile('image')) {
             // Delete old image

@@ -18,7 +18,8 @@ class Product extends Model
         'description',
         'price',
         'image',
-        'created_by'
+        'created_by',
+        'category_id'
     ];
 
     protected $casts = [
@@ -28,6 +29,11 @@ class Product extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 
     public function variants(): HasMany

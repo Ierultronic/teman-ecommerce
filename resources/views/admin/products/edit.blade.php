@@ -36,6 +36,23 @@
                 @enderror
             </div>
 
+            <!-- Category -->
+            <div>
+                <label for="category_id" class="block text-sm font-medium text-gray-700">Category</label>
+                <select name="category_id" id="category_id"
+                        class="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-primary-500 focus:border-primary-500">
+                    <option value="">-- No Category --</option>
+                    @foreach(\App\Models\Category::active()->ordered()->get() as $category)
+                        <option value="{{ $category->id }}" {{ old('category_id', $product->category_id) == $category->id ? 'selected' : '' }}>
+                            {{ $category->name }}
+                        </option>
+                    @endforeach
+                </select>
+                @error('category_id')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
             <!-- Price -->
             <div>
                 <label for="price" class="block text-sm font-medium text-gray-700">Price *</label>

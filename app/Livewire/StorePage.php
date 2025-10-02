@@ -25,6 +25,8 @@ class StorePage extends Component
     ];
 
     public $products;
+    public $categories;
+    public $selectedCategory = null;
     public $cart = [];
     public $customerName = '';
     public $customerEmail = '';
@@ -71,7 +73,27 @@ class StorePage extends Component
 
     public function mount()
     {
-        $this->products = Product::with(['variants'])->latest()->get();
+        $this->loadProducts();
+        $this->categories = \App\Models\Category::active()->ordered()->withCount('activeProducts')->get();
+        
+        // Load cart from localStorage if available
+        $this->dispatch('load-cart-from-storage');
+        
+        // Initialize cart properties (only if cart was not loaded from storage)
+        if (empty($this->cart)) {
+            $this->updateCartProperties();
+        }
+    }
+
+    public function loadProducts()
+    {
+        $query = Product::with(['variants', 'category']);
+
+        if ($this->selectedCategory) {
+            $query->where('category_id', $this->selectedCategory);
+        }
+
+        $this->products = $query->latest()->get();
         
         // Add stock information to each product
         foreach ($this->products as $product) {
@@ -81,14 +103,12 @@ class StorePage extends Component
             // Initialize selectedVariant as null for each product
             $this->selectedVariant[$product->id] = null;
         }
-        
-        // Load cart from localStorage if available
-        $this->dispatch('load-cart-from-storage');
-        
-        // Initialize cart properties (only if cart was not loaded from storage)
-        if (empty($this->cart)) {
-            $this->updateCartProperties();
-        }
+    }
+
+    public function filterByCategory($categoryId = null)
+    {
+        $this->selectedCategory = $categoryId;
+        $this->loadProducts();
     }
 
     public function getCartQuantity($productId, $variantId = null)

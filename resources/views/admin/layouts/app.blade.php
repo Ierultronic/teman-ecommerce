@@ -91,6 +91,11 @@
                         <i data-feather="home" class="w-5 h-5 mr-3"></i>
                         Dashboard
                     </a>
+                    <a href="{{ route('admin.categories.index') }}" 
+                       class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.categories.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}">
+                        <i data-feather="folder" class="w-5 h-5 mr-3"></i>
+                        Categories
+                    </a>
                     <a href="{{ route('admin.products.index') }}" 
                        class="flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('admin.products.*') ? 'bg-primary-50 text-primary-700 border-r-2 border-primary-600' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}">
                         <i data-feather="package" class="w-5 h-5 mr-3"></i>
