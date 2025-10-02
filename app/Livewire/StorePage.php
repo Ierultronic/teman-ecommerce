@@ -25,7 +25,6 @@ class StorePage extends Component
     ];
 
     public $products;
-    public $categories;
     public $selectedCategory = null;
     public $cart = [];
     public $customerName = '';
@@ -74,7 +73,6 @@ class StorePage extends Component
     public function mount()
     {
         $this->loadProducts();
-        $this->categories = \App\Models\Category::active()->ordered()->withCount('activeProducts')->get();
         
         // Load cart from localStorage if available
         $this->dispatch('load-cart-from-storage');
@@ -903,6 +901,11 @@ class StorePage extends Component
         // Validate quantities against current stock before rendering
         $this->validateQuantitiesAgainstStock();
         
-        return view('livewire.store-page');
+        // Ensure categories are always loaded with counts for each render
+        $categories = \App\Models\Category::active()->ordered()->withCount('activeProducts')->get();
+        
+        return view('livewire.store-page', [
+            'categories' => $categories
+        ]);
     }
 }
